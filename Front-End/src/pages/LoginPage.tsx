@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Briefcase, UserCheck, Eye, EyeOff, LogIn } from 'lucide-react'
 import { useAuth } from '../context/useAuth'
+import stackularLogo from '../assets/Stackular_Logo.png'
 import type { UserRole } from '../types'
 
 export default function LoginPage() {
@@ -30,31 +31,52 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: 'linear-gradient(135deg, #0c0c0c 0%, #161719 50%, #0c0c0c 100%)' }}
+    >
       <div className="w-full max-w-md">
 
         {/* Logo / Brand */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-2xl mb-4 shadow-lg">
-            <Briefcase className="w-7 h-7 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
+            <img
+              src={stackularLogo}
+              alt="Stackular logo"
+              className="w-full h-full object-contain drop-shadow-lg"
+            />
           </div>
-          <h1 className="text-2xl font-bold text-white">ATS Stackular</h1>
-          <p className="text-slate-400 text-sm mt-1">Applicant Tracking System</p>
+          <h1 className="text-2xl font-bold text-white" style={{ fontFamily: 'Sora, sans-serif' }}>
+            ATS Stackular
+          </h1>
+          <p className="text-sm mt-1" style={{ color: '#9ca3af' }}>Applicant Tracking System</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <h2 className="text-xl font-semibold text-slate-800 mb-6">Sign in to your panel</h2>
+        <div
+          className="rounded-2xl shadow-2xl p-8"
+          style={{ background: '#161719', border: '1px solid #37373f' }}
+        >
+          <h2
+            className="text-xl font-semibold text-white mb-6"
+            style={{ fontFamily: 'Sora, sans-serif' }}
+          >
+            Sign in to your panel
+          </h2>
 
           {/* Role Toggle */}
-          <div className="flex gap-2 mb-6 p-1 bg-slate-100 rounded-xl">
+          <div
+            className="flex gap-2 mb-6 p-1 rounded-xl"
+            style={{ background: '#1a1d20' }}
+          >
             <button
               type="button"
               onClick={() => { setRole('recruitment'); setError('') }}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all"
+              style={
                 role === 'recruitment'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
+                  ? { background: '#1d2ba4', color: '#fff' }
+                  : { color: '#9ca3af' }
+              }
             >
               <Briefcase className="w-4 h-4" />
               Recruitment Panel
@@ -62,11 +84,12 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => { setRole('interviewer'); setError('') }}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all"
+              style={
                 role === 'interviewer'
-                  ? 'bg-white text-purple-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
+                  ? { background: '#1d2ba4', color: '#fff' }
+                  : { color: '#9ca3af' }
+              }
             >
               <UserCheck className="w-4 h-4" />
               Interviewer Panel
@@ -75,7 +98,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label className="block text-sm font-medium mb-1.5" style={{ color: '#e5e7eb' }}>
                 Username
               </label>
               <input
@@ -84,12 +107,19 @@ export default function LoginPage() {
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter your username"
                 required
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className="w-full px-3.5 py-2.5 rounded-lg text-white placeholder-gray-500 focus:outline-none transition"
+                style={{
+                  background: '#1a1d20',
+                  border: '1px solid #37373f',
+                  color: '#fff',
+                }}
+                onFocus={(e) => (e.currentTarget.style.borderColor = '#1d2ba4')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = '#37373f')}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label className="block text-sm font-medium mb-1.5" style={{ color: '#e5e7eb' }}>
                 Password
               </label>
               <div className="relative">
@@ -99,12 +129,20 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   required
-                  className="w-full px-3.5 py-2.5 pr-10 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  className="w-full px-3.5 py-2.5 pr-10 rounded-lg text-white placeholder-gray-500 focus:outline-none transition"
+                  style={{
+                    background: '#1a1d20',
+                    border: '1px solid #37373f',
+                    color: '#fff',
+                  }}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = '#1d2ba4')}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = '#37373f')}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                  style={{ color: '#9ca3af' }}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -112,7 +150,10 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+              <p
+                className="text-sm rounded-lg px-3 py-2"
+                style={{ color: '#fca5a5', background: '#2c0b0e', border: '1px solid #7f1d1d' }}
+              >
                 {error}
               </p>
             )}
@@ -120,11 +161,10 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-white transition-all ${
-                role === 'recruitment'
-                  ? 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'
-                  : 'bg-purple-600 hover:bg-purple-700 active:bg-purple-800'
-              } disabled:opacity-60 disabled:cursor-not-allowed`}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{ background: '#1d2ba4' }}
+              onMouseEnter={(e) => !loading && (e.currentTarget.style.background = '#12219e')}
+              onMouseLeave={(e) => !loading && (e.currentTarget.style.background = '#1d2ba4')}
             >
               {loading ? (
                 <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -136,7 +176,7 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <p className="text-center text-slate-500 text-xs mt-6">
+        <p className="text-center text-xs mt-6" style={{ color: '#6b7280' }}>
           Internal use only · ATS Stackular v1.0
         </p>
       </div>

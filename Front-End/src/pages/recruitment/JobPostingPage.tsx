@@ -40,41 +40,72 @@ export default function JobPostingPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const inputStyle = {
+    background: '#1a1d20',
+    border: '1px solid #37373f',
+    color: '#fff',
+  }
+
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">Job Posting</h1>
-        <p className="text-slate-500 text-sm mt-1">Create a job description for your open position.</p>
+        <h1
+          className="text-2xl font-bold text-white"
+          style={{ fontFamily: 'Sora, sans-serif' }}
+        >
+          Job Posting
+        </h1>
+        <p className="text-sm mt-1" style={{ color: '#9ca3af' }}>
+          Create a job description for your open position.
+        </p>
       </div>
 
       {/* Hire Type Selection */}
       {!hireType && (
         <div>
-          <p className="text-sm font-medium text-slate-600 mb-3">Select hiring type to get started</p>
+          <p className="text-sm font-medium mb-3" style={{ color: '#9ca3af' }}>
+            Select hiring type to get started
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <button
               onClick={() => setHireType('fresher')}
-              className="group flex flex-col items-start gap-3 p-6 bg-white border-2 border-slate-200 rounded-2xl hover:border-blue-400 hover:shadow-md transition-all text-left"
+              className="group flex flex-col items-start gap-3 p-6 rounded-2xl text-left transition-all"
+              style={{ background: '#161719', border: '2px solid #37373f' }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#1d2ba4')}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#37373f')}
             >
-              <div className="w-10 h-10 bg-blue-100 group-hover:bg-blue-200 rounded-xl flex items-center justify-center transition-colors">
-                <UserPlus className="w-5 h-5 text-blue-600" />
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{ background: '#1a1d20' }}
+              >
+                <UserPlus className="w-5 h-5" style={{ color: '#6ea8fe' }} />
               </div>
               <div>
-                <p className="font-semibold text-slate-800">Hire a Fresher</p>
-                <p className="text-sm text-slate-500 mt-0.5">Entry-level candidates with no prior experience requirement.</p>
+                <p className="font-semibold text-white">Hire a Fresher</p>
+                <p className="text-sm mt-0.5" style={{ color: '#9ca3af' }}>
+                  Entry-level candidates with no prior experience requirement.
+                </p>
               </div>
             </button>
 
             <button
               onClick={() => setHireType('experienced')}
-              className="group flex flex-col items-start gap-3 p-6 bg-white border-2 border-slate-200 rounded-2xl hover:border-amber-400 hover:shadow-md transition-all text-left"
+              className="group flex flex-col items-start gap-3 p-6 rounded-2xl text-left transition-all"
+              style={{ background: '#161719', border: '2px solid #37373f' }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#1d2ba4')}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#37373f')}
             >
-              <div className="w-10 h-10 bg-amber-100 group-hover:bg-amber-200 rounded-xl flex items-center justify-center transition-colors">
-                <Award className="w-5 h-5 text-amber-600" />
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{ background: '#1a1d20' }}
+              >
+                <Award className="w-5 h-5" style={{ color: '#1d2ba4' }} />
               </div>
               <div>
-                <p className="font-semibold text-slate-800">Hire Experienced</p>
-                <p className="text-sm text-slate-500 mt-0.5">Candidates with specific years of industry experience.</p>
+                <p className="font-semibold text-white">Hire Experienced</p>
+                <p className="text-sm mt-0.5" style={{ color: '#9ca3af' }}>
+                  Candidates with specific years of industry experience.
+                </p>
               </div>
             </button>
           </div>
@@ -83,25 +114,32 @@ export default function JobPostingPage() {
 
       {/* Form */}
       {hireType && !generatedJD && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div
+          className="rounded-2xl p-6"
+          style={{ background: '#161719', border: '1px solid #37373f' }}
+        >
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
-              {hireType === 'fresher' ? (
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <UserPlus className="w-4 h-4 text-blue-600" />
-                </div>
-              ) : (
-                <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
-                  <Award className="w-4 h-4 text-amber-600" />
-                </div>
-              )}
-              <h2 className="font-semibold text-slate-800">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ background: '#1a1d20' }}
+              >
+                {hireType === 'fresher' ? (
+                  <UserPlus className="w-4 h-4" style={{ color: '#6ea8fe' }} />
+                ) : (
+                  <Award className="w-4 h-4" style={{ color: '#1d2ba4' }} />
+                )}
+              </div>
+              <h2 className="font-semibold text-white">
                 {hireType === 'fresher' ? 'Hire a Fresher' : 'Hire an Experienced Candidate'}
               </h2>
             </div>
             <button
               onClick={handleReset}
-              className="text-sm text-slate-400 hover:text-slate-600 flex items-center gap-1 transition-colors"
+              className="text-sm flex items-center gap-1 transition-colors"
+              style={{ color: '#9ca3af' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#9ca3af')}
             >
               <RotateCcw className="w-3.5 h-3.5" />
               Change
@@ -110,8 +148,8 @@ export default function JobPostingPage() {
 
           <form onSubmit={handleCreateJD} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Job Title <span className="text-red-400">*</span>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: '#e5e7eb' }}>
+                Job Title <span style={{ color: '#f87171' }}>*</span>
               </label>
               <input
                 type="text"
@@ -119,13 +157,16 @@ export default function JobPostingPage() {
                 onChange={(e) => setJobTitle(e.target.value)}
                 placeholder="e.g. Frontend Developer, Data Analyst"
                 required
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className="w-full px-3.5 py-2.5 rounded-lg focus:outline-none transition"
+                style={inputStyle}
+                onFocus={(e) => (e.currentTarget.style.borderColor = '#1d2ba4')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = '#37373f')}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Required Skills <span className="text-red-400">*</span>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: '#e5e7eb' }}>
+                Required Skills <span style={{ color: '#f87171' }}>*</span>
               </label>
               <input
                 type="text"
@@ -133,15 +174,20 @@ export default function JobPostingPage() {
                 onChange={(e) => setRequiredSkills(e.target.value)}
                 placeholder="e.g. React, TypeScript, Node.js (comma-separated)"
                 required
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className="w-full px-3.5 py-2.5 rounded-lg focus:outline-none transition"
+                style={inputStyle}
+                onFocus={(e) => (e.currentTarget.style.borderColor = '#1d2ba4')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = '#37373f')}
               />
-              <p className="text-xs text-slate-400 mt-1">Separate multiple skills with commas.</p>
+              <p className="text-xs mt-1" style={{ color: '#6b7280' }}>
+                Separate multiple skills with commas.
+              </p>
             </div>
 
             {hireType === 'experienced' && (
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Experience Required <span className="text-red-400">*</span>
+                <label className="block text-sm font-medium mb-1.5" style={{ color: '#e5e7eb' }}>
+                  Experience Required <span style={{ color: '#f87171' }}>*</span>
                 </label>
                 <input
                   type="text"
@@ -149,7 +195,10 @@ export default function JobPostingPage() {
                   onChange={(e) => setExperience(e.target.value)}
                   placeholder="e.g. 3+ years, 5-7 years"
                   required
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+                  className="w-full px-3.5 py-2.5 rounded-lg focus:outline-none transition"
+                  style={inputStyle}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = '#1d2ba4')}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = '#37373f')}
                 />
               </div>
             )}
@@ -158,11 +207,10 @@ export default function JobPostingPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-medium text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
-                  hireType === 'fresher'
-                    ? 'bg-blue-600 hover:bg-blue-700'
-                    : 'bg-amber-500 hover:bg-amber-600'
-                }`}
+                className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-medium text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ background: '#1d2ba4' }}
+                onMouseEnter={(e) => !loading && (e.currentTarget.style.background = '#12219e')}
+                onMouseLeave={(e) => !loading && (e.currentTarget.style.background = '#1d2ba4')}
               >
                 {loading ? (
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -181,25 +229,38 @@ export default function JobPostingPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-green-600" />
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ background: '#1a1d20' }}
+              >
+                <Sparkles className="w-4 h-4" style={{ color: '#6ea8fe' }} />
               </div>
               <div>
-                <p className="font-semibold text-slate-800">Job Description Generated</p>
-                <p className="text-xs text-slate-400">{generatedJD.jobTitle}</p>
+                <p className="font-semibold text-white">Job Description Generated</p>
+                <p className="text-xs" style={{ color: '#9ca3af' }}>{generatedJD.jobTitle}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors"
+                style={{ color: '#9ca3af', border: '1px solid #37373f', background: 'transparent' }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#1a1d20')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? (
+                  <Check className="w-3.5 h-3.5" style={{ color: '#6ea8fe' }} />
+                ) : (
+                  <Copy className="w-3.5 h-3.5" />
+                )}
                 {copied ? 'Copied!' : 'Copy'}
               </button>
               <button
                 onClick={handleReset}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors"
+                style={{ color: '#1d2ba4', border: '1px solid #1d2ba4', background: 'transparent' }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#1a1d20')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 New JD
@@ -207,8 +268,11 @@ export default function JobPostingPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <pre className="whitespace-pre-wrap font-sans text-slate-700 text-sm leading-relaxed">
+          <div
+            className="rounded-2xl p-6"
+            style={{ background: '#161719', border: '1px solid #37373f' }}
+          >
+            <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed" style={{ color: '#e5e7eb' }}>
               {generatedJD.content}
             </pre>
           </div>

@@ -1,1 +1,23 @@
 @import "tailwindcss";
+
+:root {
+  --font-primary: "Sora", sans-serif;
+  --color-bg: #0c0c0c;
+  --color-surface: #161719;
+  --color-surface-2: #1a1d20;
+  --color-border: #37373f;
+  --color-accent: #1d2ba4;
+  --color-accent-hover: #12219e;
+  --color-cyan: #6ea8fe;
+  --color-text: #ffffff;
+  --color-text-muted: #9ca3af;
+}
+
+* {
+  font-family: var(--font-primary);
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
