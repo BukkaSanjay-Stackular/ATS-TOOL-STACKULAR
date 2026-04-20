@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   function login(username: string, password: string, role: UserRole): boolean {
     const match = USERS.find(
-      (u) => u.username.toLocaleLowerCase() === username && u.password.toLocaleLowerCase() === password && u.role === role
+      (u) => u.username.toLocaleLowerCase() === username.toLocaleLowerCase() && u.password === password && u.role === role
     )
     if (!match) return false
     setUser({ id: match.id, username: match.username, role: match.role, name: match.name })

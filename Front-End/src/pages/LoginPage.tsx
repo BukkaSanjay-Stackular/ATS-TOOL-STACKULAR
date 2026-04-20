@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Briefcase, UserCheck, Eye, EyeOff, LogIn } from 'lucide-react'
 import { useAuth } from '../context/useAuth'
-import stackularLogo from '../assets/Stackular_Logo.png'
+import stackularLogo from '../assets/Stackular_logo.svg'
 import type { UserRole } from '../types'
 
 export default function LoginPage() {
@@ -47,7 +47,7 @@ export default function LoginPage() {
             />
           </div>
           <h1 className="text-2xl font-bold text-white" style={{ fontFamily: 'Sora, sans-serif' }}>
-            ATS Stackular
+            Stackular
           </h1>
           <p className="text-sm mt-1" style={{ color: '#9ca3af' }}>Applicant Tracking System</p>
         </div>
