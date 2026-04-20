@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { Briefcase, LayoutDashboard, FilePlus, LogOut } from 'lucide-react'
-import { useAuth } from '../../context/AuthContext'
+import { useAuth } from '../../context/useAuth'
 
 const NAV_ITEMS = [
   { to: '/recruitment/dashboard', icon: LayoutDashboard, label: 'Dashboard' },

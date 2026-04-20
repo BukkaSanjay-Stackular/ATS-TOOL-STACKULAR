@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useState, useEffect } from 'react'
 import type { User, UserRole } from '../types'
 
 const USERS: Array<User & { password: string }> = [
@@ -38,8 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       (u) => u.username === username && u.password === password && u.role === role
     )
     if (!match) return false
-    const { password: _, ...safeUser } = match
-    setUser(safeUser)
+    setUser({ id: match.id, username: match.username, role: match.role, name: match.name })
     return true
   }
 
@@ -50,8 +49,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>
 }
 
-export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be used inside AuthProvider')
-  return ctx
-}
+export { AuthContext }

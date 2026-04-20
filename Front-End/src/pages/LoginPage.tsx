@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Briefcase, UserCheck, Eye, EyeOff, LogIn } from 'lucide-react'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import type { UserRole } from '../types'
 
 export default function LoginPage() {
