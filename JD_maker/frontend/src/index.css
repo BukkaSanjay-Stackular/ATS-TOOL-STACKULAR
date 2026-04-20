@@ -1,0 +1,257 @@
+:root {
+  --primary: #4F46E5;
+  --primary-hover: #4338CA;
+  --bg-color: #F8FAFC;
+  --surface: #FFFFFF;
+  --surface-hover: #F1F5F9;
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  --border: #E2E8F0;
+  --radius: 12px;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 450px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+  box-shadow: var(--shadow-sm);
+}
+
+.sidebar-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+}
+
+.sidebar-header h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-main);
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: all 0.2s;
+  background: var(--bg-color);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  background: var(--surface);
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.btn {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--surface-hover);
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-color);
+  position: relative;
+}
+
+.editor-toolbar {
+  padding: 1rem 2rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.editor-container {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+}
+
+.document-page {
+  background: white;
+  width: 100%;
+  max-width: 800px;
+  min-height: 1056px; /* 8.5x11 inches roughly at 96dpi */
+  padding: 3rem 4rem;
+  box-shadow: var(--shadow-xl);
+  border-radius: 4px;
+}
+
+/* React Quill overrides */
+.ql-container.ql-snow {
+  border: none !important;
+  font-size: 12px !important;
+  font-family: "Times New Roman", Times, serif !important;
+  height: auto !important;
+}
+.ql-editor {
+  padding: 2rem 0 !important;
+  overflow-y: visible !important;
+  height: auto !important;
+}
+.ql-toolbar.ql-snow {
+  border: none !important;
+  border-bottom: 1px solid var(--border) !important;
+  background: var(--surface-hover);
+  padding: 1rem 4rem !important;
+  margin: -3rem -4rem 0 -4rem;
+  position: sticky;
+  top: -3rem;
+  z-index: 10;
+}
+.quill-wrapper {
+  border: none;
+  height: auto;
+}
+#pdf-content {
+  color: #000000;
+  font-family: "Times New Roman", Times, serif;
+}
+#pdf-content h1 {
+  font-size: 16px;
+  margin-bottom: 0.75rem;
+  color: #000000;
+  border-bottom: 1px solid #000000;
+  padding-bottom: 0.25rem;
+}
+#pdf-content h2 {
+  font-size: 14px;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: #000000;
+}
+#pdf-content p, #pdf-content ul, #pdf-content li {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #000000;
+  margin-bottom: 0.5rem;
+}
+#pdf-content ul {
+  padding-left: 1.5rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+}
+.spinner {
+  border: 3px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top: 3px solid white;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
