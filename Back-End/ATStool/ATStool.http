@@ -1,0 +1,6 @@
+@ATStool_HostAddress = http://localhost:5171
+
+GET {{ATStool_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
