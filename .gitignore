@@ -1,2 +1,10 @@
 .gitnexus
 .claude/skills/
+.venv
+.env
+__pycache__/    
+*.pyc
+.idea/
+.DS_Store
+*.log
+
