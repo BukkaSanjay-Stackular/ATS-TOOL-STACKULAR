@@ -8,6 +8,8 @@ import json
 import requests
 from dotenv import load_dotenv
 from typing import Dict, Any
+from jinja2 import Template
+from weasyprint import HTML
 
 # Load environment variables
 load_dotenv()
@@ -147,6 +149,323 @@ Generate the complete JD following the format specifications. Output only the fo
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(jd_content)
         print(f"JD saved to: {output_file}")
+    
+    def parse_jd_content(self, jd_content: str, hr_input: dict) -> dict:
+        """
+        Parse the generated JD content into structured data for the template
+        
+        Args:
+            jd_content: The generated JD text
+            hr_input: Original HR input data
+        
+        Returns:
+            Dictionary with structured JD data
+        """
+        data = {
+            "company_name": hr_input.get("company_name", "Stackular"),
+            "role": hr_input.get("job_title", ""),
+            "duration": hr_input.get("duration", ""),
+            "location": hr_input.get("location", ""),
+            "work_mode": hr_input.get("work_mode", ""),
+            "work_hours": hr_input.get("work_hours", ""),
+            "stipend": f"{hr_input.get('stipend_salary', 0):,} INR/Month",
+            "full_time": "",
+            "about": hr_input.get("about_us", ""),
+            "overview": "",
+            "work": [],
+            "requirements": [],
+            "good_to_have": [],
+            "who_can_apply": [],
+            "logo_path": "./assets/logo.svg"  # Relative path to logo
+        }
+        
+        # Add full-time offer if available
+        if hr_input.get("fulltime_offer_salary"):
+            data["full_time"] = f"Based on your performance, we will review your internship and extend a full-time offer. The starting salary for the full-time role will be ₹{hr_input.get('fulltime_offer_salary'):,} INR/Month."
+        
+        # Parse JD content to extract sections
+        lines = jd_content.split('\n')
+        current_section = None
+        current_items = []
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            
+            # Detect section headers
+            lower_line = line.lower()
+            if 'role overview' in lower_line or ('overview' in lower_line and current_section is None):
+                current_section = 'overview'
+                current_items = []
+            elif 'what you' in lower_line and 'work' in lower_line or 'responsibilities' in lower_line or 'key responsibilities' in lower_line:
+                current_section = 'work'
+                current_items = []
+            elif 'what you need' in lower_line or 'requirements' in lower_line or 'required skills' in lower_line:
+                current_section = 'requirements'
+                current_items = []
+            elif 'great to have' in lower_line or 'good to have' in lower_line or 'nice to have' in lower_line:
+                current_section = 'good_to_have'
+                current_items = []
+            elif 'who can apply' in lower_line or 'eligibility' in lower_line:
+                current_section = 'who_can_apply'
+                current_items = []
+            elif 'about' in lower_line and current_section is None:
+                current_section = 'about'
+                current_items = []
+            # Process content based on current section
+            elif current_section:
+                # Skip section headers
+                if line.endswith(':') or line.isupper():
+                    continue
+                
+                # Handle bullet points
+                if line.startswith('•') or line.startswith('-') or line.startswith('*'):
+                    item = line.lstrip('•-* ').strip()
+                    if item:
+                        current_items.append(item)
+                # Handle regular text
+                else:
+                    if current_section == 'overview':
+                        data['overview'] += line + ' '
+                    elif current_section == 'about':
+                        data['about'] += line + ' '
+                    else:
+                        if line:
+                            current_items.append(line)
+                
+                # Update data dictionary
+                if current_section == 'work':
+                    data['work'] = current_items.copy()
+                elif current_section == 'requirements':
+                    data['requirements'] = current_items.copy()
+                elif current_section == 'good_to_have':
+                    data['good_to_have'] = current_items.copy()
+                elif current_section == 'who_can_apply':
+                    data['who_can_apply'] = current_items.copy()
+        
+        # Clean up text fields
+        data['overview'] = data['overview'].strip()
+        data['about'] = data['about'].strip()
+        
+        return data
+    
+    def generate_pdf(self, jd_content: str, hr_input: dict, output_filename: str) -> bool:
+        """
+        Generate a PDF from the JD content using WeasyPrint and Jinja2
+        
+        Args:
+            jd_content: The generated JD text
+            hr_input: Original HR input data
+            output_filename: Base filename (without extension)
+        
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            pdf_filename = f"{output_filename}.pdf"
+            
+            # Parse JD content into structured data
+            data = self.parse_jd_content(jd_content, hr_input)
+            
+            # HTML template (inline) - based on debug/template.html
+            html_template = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Job Description - {{ role }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 50px 75px;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 35px;
+        }
+        .logo {
+            width: 140px;
+            height: auto;
+        }
+        .role-section {
+            margin-bottom: 18px;
+        }
+        .role-section p {
+            margin: 3px 0;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .role-title {
+            margin-bottom: 5px !important;
+        }
+        .work-details {
+            margin-bottom: 18px;
+        }
+        .work-details p {
+            margin: 3px 0;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .full-time-section {
+            margin-bottom: 22px;
+        }
+        .full-time-section p {
+            margin: 3px 0;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        .section {
+            margin-bottom: 22px;
+            page-break-inside: avoid;
+        }
+        h3 {
+            margin: 0 0 12px 0;
+            color: #000;
+            font-size: 13px;
+            font-weight: 700;
+            page-break-after: avoid;
+        }
+        p {
+            font-size: 12px;
+            line-height: 1.6;
+            margin: 0 0 12px 0;
+        }
+        strong {
+            font-weight: 700;
+        }
+        ul {
+            margin: 0 0 0 22px;
+            padding: 0;
+            list-style-type: disc;
+        }
+        li {
+            margin-bottom: 8px;
+            font-size: 12px;
+            line-height: 1.6;
+            padding-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        {% if logo_path %}
+        <img src="{{ logo_path }}" class="logo">
+        {% else %}
+        <h1 style="margin: 0; font-size: 24px;">{{ company_name }}</h1>
+        {% endif %}
+    </div>
+
+    <!-- Role Info -->
+    <div class="role-section">
+        <p class="role-title"><strong>Role:</strong> {{ role }}</p>
+        <p><strong>Duration:</strong> {{ duration }}</p>
+        <p><strong>Location:</strong> {{ location }}</p>
+        <p><strong>Work mode:</strong> {{ work_mode }}</p>
+    </div>
+
+    <div class="work-details">
+        <p><strong>Work Hours:</strong> {{ work_hours }}</p>
+        <p><strong>Stipend:</strong> {{ stipend }}</p>
+    </div>
+
+    {% if full_time %}
+    <div class="full-time-section">
+        <p><strong>Full-Time Offer:</strong> {{ full_time }}</p>
+    </div>
+    {% endif %}
+
+    <!-- About -->
+    {% if about %}
+    <div class="section">
+        <p><strong>About us:</strong> {{ about }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Role Overview -->
+    {% if overview %}
+    <div class="section">
+        <h3>Role Overview</h3>
+        <p>{{ overview }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Work -->
+    {% if work %}
+    <div class="section">
+        <h3>What You'll Work On</h3>
+        <ul>
+            {% for item in work %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Requirements -->
+    {% if requirements %}
+    <div class="section">
+        <h3>What You Need</h3>
+        <ul>
+            {% for item in requirements %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Good to have -->
+    {% if good_to_have %}
+    <div class="section">
+        <h3>Great to Have</h3>
+        <ul>
+            {% for item in good_to_have %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Who Can Apply -->
+    {% if who_can_apply %}
+    <div class="section">
+        <h3>Who Can Apply</h3>
+        <ul>
+            {% for item in who_can_apply %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</body>
+</html>
+            """
+            
+            # Render HTML using Jinja2
+            template = Template(html_template)
+            html_out = template.render(data)
+            
+            # Generate PDF using WeasyPrint
+            HTML(string=html_out, base_url='.').write_pdf(pdf_filename)
+            
+            print(f"✅ PDF generated successfully: {pdf_filename}")
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error generating PDF: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
 
 
 def main():

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <img src="{{ logo_path }}" class="logo">
+    </div>
+
+    <!-- Role Info -->
+    <div class="role-section">
+        <p class="role-title"><strong>Role:</strong> {{ role }}</p>
+        <p><strong>Internship Duration:</strong> {{ duration }}</p>
+        <p><strong>Location:</strong> {{ location }}</p>
+        <p><strong>Work mode:</strong> {{ work_mode }}</p>
+    </div>
+
+    <div class="work-details">
+        <p><strong>Work Hours:</strong> {{ work_hours }}</p>
+        <p><strong>Stipend:</strong> {{ stipend }}</p>
+    </div>
+
+    <div class="full-time-section">
+        <p><strong>Full-Time Offer:</strong> {{ full_time }}</p>
+    </div>
+
+    <!-- About -->
+    <div class="section">
+        <p><strong>About us:</strong> {{ about }}</p>
+    </div>
+
+    <!-- Role Overview -->
+    <div class="section">
+        <h3>Role Overview</h3>
+        <p>{{ overview }}</p>
+    </div>
+
+    <!-- Work -->
+    <div class="section">
+        <h3>What You'll Work On</h3>
+        <ul>
+            {% for item in work %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Requirements -->
+    <div class="section">
+        <h3>What You Need</h3>
+        <ul>
+            {% for item in requirements %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Good to have -->
+    <div class="section">
+        <h3>Great to Have</h3>
+        <ul>
+            {% for item in good_to_have %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Who Can Apply -->
+    <div class="section">
+        <h3>Who Can Apply</h3>
+        <ul>
+            {% for item in who_can_apply %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+</body>
+</html>

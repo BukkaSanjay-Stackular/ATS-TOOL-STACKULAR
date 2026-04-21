@@ -169,8 +169,9 @@ def main():
             print("❌ Failed to generate JD")
             return
         
-        # Save output
-        output_file = f"jd_{hr_input['job_title'].replace(' ', '_').replace('–', '-')}.txt"
+        # Save text output
+        base_filename = f"jd_{hr_input['job_title'].replace(' ', '_').replace('–', '-')}"
+        output_file = f"{base_filename}.txt"
         generator.save_jd(jd, output_file)
         
         # Display result
@@ -180,6 +181,26 @@ def main():
         print(f"\n📄 Saved to: {output_file}\n")
         print(jd)
         print("\n" + "="*70)
+        
+        # Ask if user wants PDF
+        print("\n📄 PDF Generation")
+        print("-" * 70)
+        pdf_choice = input("Would you like to generate a PDF version? (yes/no): ").strip().lower()
+        
+        if pdf_choice == "yes":
+            print("\n📝 Generating PDF...")
+            success = generator.generate_pdf(jd, hr_input, base_filename)
+            
+            if success:
+                print(f"✅ PDF generated and downloaded successfully as: {base_filename}.pdf")
+            else:
+                print("⚠️  PDF generation failed, but text file is available.")
+        else:
+            print("ℹ️  Skipping PDF generation.")
+        
+        print("\n" + "="*70)
+        print("✅ PROCESS COMPLETED")
+        print("="*70)
         
     except KeyboardInterrupt:
         print("\n\n❌ Cancelled by user.")
