@@ -1,0 +1,34 @@
+Role: ML Intern
+Internship Duration: 3 months
+Location: Hyderabad
+Work mode: On-site
+Work Hours: 2:00 pm to 11:00 pm
+Stipend: ₹50000 INR/Month.
+Full-Time Offer: Based on your performance, we will review your internship and extend a full-time offer. The starting salary for the full-time role will be ₹100000 INR/Month.
+
+About us: At Stackular, we are more than just a team – we are a product development community driven by a shared vision. Our values shape who we are, what we do, and how we interact with our peers and our customers. We're not just seeking any regular engineer; we want individuals who identify with our core values and are passionate about software development.
+
+Role Overview
+Join Stackular’s AI Lab as an ML Intern and dive deep into cutting‑edge natural language processing research. You will work hands‑on with LangChain, transformer models, and the mathematics that power them, contributing to proof‑of‑concept projects that explore the next generation of large language models.
+
+What You'll Work On
+• Develop and fine‑tune transformer‑based NLP models using Python and popular libraries (e.g., Hugging Face, PyTorch).  
+• Build proof‑of‑concept pipelines with LangChain to integrate LLMs into real‑world applications.  
+• Conduct literature reviews and experimental research on emerging large language models (LLMs).  
+• Analyse and implement the mathematical concepts behind attention mechanisms and transformer architectures.  
+• Document findings, prepare demo notebooks, and present results to the AI research team.  
+
+What You Need
+• Strong programming skills in Python, with experience in NLP libraries such as Hugging Face Transformers.  
+• Familiarity with LangChain or similar LLM orchestration frameworks.  
+• Solid grasp of linear algebra, probability, and calculus as applied to transformer models.  
+• Ability to read and synthesize academic papers on NLP and LLM research.  
+• Good communication skills to articulate technical concepts and research outcomes.  
+
+Great to Have
+• Experience with deep‑learning frameworks (PyTorch or TensorFlow).  
+• Hands‑on exposure to cloud platforms (AWS, GCP, Azure) for model training and deployment.  
+• Prior involvement in open‑source NLP projects or Kaggle competitions.  
+
+Who Can Apply?
+We are looking for undergraduate or postgraduate students in Computer Science, Data Science, or related fields who are passionate about NLP and eager to explore the frontiers of LLM research. Candidates should be self‑motivated, enjoy problem‑solving, and be ready to contribute to a fast‑moving, collaborative environment.
