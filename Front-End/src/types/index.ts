@@ -5,6 +5,7 @@ export interface User {
   username: string
   role: UserRole
   name: string
+  password?: string
 }
 
 export type HireType = 'fresher' | 'experienced'

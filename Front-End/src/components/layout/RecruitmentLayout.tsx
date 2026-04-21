@@ -35,7 +35,7 @@ export default function RecruitmentLayout() {
             </div>
             <div>
               <p className="text-white font-semibold text-sm" style={{ fontFamily: 'Sora, sans-serif' }}>
-                ATS Stackular
+                Stackular ATS
               </p>
               <p className="text-xs" style={{ color: '#9ca3af' }}>Recruitment Panel</p>
             </div>
