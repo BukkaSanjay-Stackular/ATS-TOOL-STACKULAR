@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { LayoutDashboard, FilePlus, LogOut } from 'lucide-react'
 import { useAuth } from '../../context/useAuth'
-import stackularLogo from '../../assets/Stackular_Logo.png'
+import stackularLogo from '../../assets/Stackular_logo.svg'
 
 const NAV_ITEMS = [
   { to: '/recruitment/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
