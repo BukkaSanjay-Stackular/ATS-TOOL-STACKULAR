@@ -1,7 +1,7 @@
 import { createContext, useState, useEffect } from 'react'
 import type { User, UserRole } from '../types'
 
-const USERS: Array<User & { password: string }> = [
+const USERS: Array<User> = [
   { id: 1, username: 'Amulya', password: 'amulya@hr-stack', role: 'recruitment', name: 'Recruitment Team' },
   { id: 2, username: 'Sai Kalyan', password: 'kalyan@manager-stack', role: 'recruitment', name: 'Recruitment Team' },
   { id: 3, username: 'Venkat', password: 'venkat@ceo-stack', role: 'recruitment', name: 'Recruitment Team' },
