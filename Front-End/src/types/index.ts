@@ -7,7 +7,6 @@ export interface User {
   username: string
   role: UserRole
   name: string
-  password?: string
 }
 
 export interface JDDraft {
@@ -18,10 +17,9 @@ export interface JDDraft {
   workMode: string
   workHours: string
   duration: string
-  stipend: string
-  salary: string
-  fullTimeOfferSalary: string
-  experienceYears: string
+  stipendSalary: string
+  fulltimeOfferSalary: string
+  yearsOfExperience: string
   roleDescription: string
   assignedTo: string[]
   status: JDStatus
