@@ -847,27 +847,15 @@ Generated JDs follow exact format from template with professional tone aligned t
 
 ---
 
-## Quick Start Commands
-
+### Quick Start
 ```bash
-# Navigate to folder
-cd "c:\dev\projects\ATS-TOOL-STACKULAR\AI & LLM's\jd_creation"
-
+cd "c:\dev\projects\ATS-TOOL-STACKULAR\AI Models\jd_creation"
+ 
 # Install dependencies (first time only)
 pip install -r requirements.txt
-
-# Option 1: Interactive CLI (RECOMMENDED FOR HR)
+ 
+# Run the interactive CLI
 python jd_generator_cli.py
-
-# Option 2: Run automated tests
-python test_harness.py
-
-# Option 3: Programmatic usage
-python
->>> from jd_generator import JDGenerator
->>> gen = JDGenerator()
->>> jd = gen.generate_jd(your_input_dict)
->>> gen.save_jd(jd, "output.txt")
 ```
 
 ---

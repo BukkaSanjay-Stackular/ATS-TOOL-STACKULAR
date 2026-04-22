@@ -83,7 +83,7 @@
       "field": "role_info",
       "label": "Role Description",
       "type": "textarea",
-      "required": true,
+      "required": true, 
       "help": "Describe the role in your own words. Include responsibilities, what the person will work on, technologies they'll use, and any special requirements. LLM will analyze this to generate skills and detailed responsibilities.",
       "example": "We're looking for an AI/ML engineer to work on autonomous agents. You'll design and experiment with AI agents, build workflows using LangChain and RAG pipelines, integrate APIs and databases, run experiments, and contribute to innovation projects. Should have strong Python skills, ML fundamentals, and familiarity with LLMs."
     }

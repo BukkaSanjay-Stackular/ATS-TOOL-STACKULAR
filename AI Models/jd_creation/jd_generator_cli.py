@@ -14,19 +14,19 @@ def get_user_input(prompt: str, input_type: str = "text", options: list = None, 
         value = input(prompt).strip()
         
         if required and not value:
-            print("❌ This field is required. Please try again.")
+            print("(!) This field is required. Please try again.")
             continue
         
         if input_type == "select" and options:
             if value not in options:
-                print(f"❌ Please select from: {', '.join(options)}")
+                print(f"(!) Please select from: {', '.join(options)}")
                 continue
         
         if input_type == "number" and value:
             try:
                 int(value)
             except ValueError:
-                print("❌ Please enter a valid number.")
+                print("(!) Please enter a valid number.")
                 continue
         
         return value
@@ -107,7 +107,7 @@ def collect_hr_inputs() -> dict:
         if not line:
             if role_info_lines:
                 break
-            print("⚠️  Please describe the role")
+            print("(!) Please describe the role")
             continue
         role_info_lines.append(line)
     role_info = "\n".join(role_info_lines)
@@ -155,9 +155,9 @@ def main():
         print(f"Company: {hr_input['company_name']}")
         
         # Confirm before generating
-        confirm = input("\n✓ Ready to generate JD? (yes/no): ").strip().lower()
+        confirm = input("\n[?] Ready to generate JD? (yes/no): ").strip().lower()
         if confirm != "yes":
-            print("❌ Cancelled.")
+            print("(!) Cancelled.")
             return
         
         # Generate JD
@@ -166,7 +166,7 @@ def main():
         jd = generator.generate_jd(hr_input)
         
         if not jd:
-            print("❌ Failed to generate JD")
+            print("(!) Failed to generate JD")
             return
         
         # Save text output
@@ -176,10 +176,13 @@ def main():
         
         # Display result
         print("\n" + "="*70)
-        print("✅ JD GENERATED SUCCESSFULLY")
+        print("[OK] JD GENERATED SUCCESSFULLY")
         print("="*70)
         print(f"\n📄 Saved to: {output_file}\n")
-        print(jd)
+        try:
+            print(jd)
+        except UnicodeEncodeError:
+            print(jd.encode('ascii', errors='replace').decode('ascii'))
         print("\n" + "="*70)
         
         # Ask if user wants PDF
@@ -203,9 +206,9 @@ def main():
         print("="*70)
         
     except KeyboardInterrupt:
-        print("\n\n❌ Cancelled by user.")
+        print("\n\n(!) Cancelled by user.")
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\n(!) Error: {e}")
         import traceback
         traceback.print_exc()
 
