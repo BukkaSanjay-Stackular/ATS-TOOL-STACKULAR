@@ -7,6 +7,9 @@ interface ToastContextValue {
   showToast: (message: string, type: ToastType) => void
 }
 
+// This file intentionally exports the context and provider together so the toast hook
+// can consume a single source of truth without introducing an extra wrapper file.
+// eslint-disable-next-line react-refresh/only-export-components
 export const ToastContext = createContext<ToastContextValue | null>(null)
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {

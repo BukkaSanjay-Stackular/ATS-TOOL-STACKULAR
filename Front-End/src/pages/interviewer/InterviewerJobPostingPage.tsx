@@ -1,7 +1,10 @@
 import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { MapPin, Monitor, Clock, ChevronLeft, FileText, CheckCircle, Trash2 } from 'lucide-react'
 import { useAuth } from '../../context/useAuth'
-import { useJD } from '../../context/useJD'
+import { useToast } from '../../hooks/useToast'
+import { getDrafts, submitRoleDescription, submitDraft, dismissDraft } from '../../services/jdApi'
+import { ApiError } from '../../types/api'
 import type { JDDraft } from '../../types'
 
 const inputStyle: React.CSSProperties = {
@@ -17,9 +20,9 @@ const inputStyle: React.CSSProperties = {
 }
 
 function compensationDisplay(draft: JDDraft): string {
-  if (draft.experienceLevel === 'intern') return `₹${draft.stipend} stipend · ${draft.duration}`
-  if (draft.experienceLevel === 'experienced') return `₹${draft.salary} per annum`
-  return `₹${draft.fullTimeOfferSalary} full-time offer`
+  if (draft.experienceLevel === 'intern') return `₹${draft.stipendSalary} stipend · ${draft.duration}`
+  if (draft.experienceLevel === 'experienced') return `₹${draft.fulltimeOfferSalary} per annum`
+  return `₹${draft.fulltimeOfferSalary} full-time offer`
 }
 
 function levelLabel(level: JDDraft['experienceLevel']): string {
@@ -50,47 +53,93 @@ function StatusBadge({ status }: { status: JDDraft['status'] }): React.ReactElem
   )
 }
 
+function SkeletonCard() {
+  return (
+    <div
+      style={{
+        background: '#161719',
+        border: '1px solid #37373f',
+        borderRadius: '14px',
+        padding: '16px 18px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '14px',
+      }}
+    >
+      <div style={{ flex: 1 }}>
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+          <div style={{ width: '160px', height: '14px', borderRadius: '4px', background: '#2a2d31' }} />
+          <div style={{ width: '56px', height: '20px', borderRadius: '999px', background: '#2a2d31' }} />
+        </div>
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <div style={{ width: '80px', height: '12px', borderRadius: '4px', background: '#2a2d31' }} />
+          <div style={{ width: '60px', height: '12px', borderRadius: '4px', background: '#2a2d31' }} />
+          <div style={{ width: '100px', height: '12px', borderRadius: '4px', background: '#2a2d31' }} />
+        </div>
+      </div>
+      <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#2a2d31', flexShrink: 0 }} />
+    </div>
+  )
+}
+
 export default function InterviewerJobPostingPage() {
   const { user } = useAuth()
-  const { getDraftsForInterviewer, getAllDraftsForInterviewer, submitRoleDescription, dismissDraftForInterviewer } = useJD()
+  const { showToast } = useToast()
+  const queryClient = useQueryClient()
 
-  const [selectedDraft, setSelectedDraft] = useState<JDDraft | null>(null)
-  const [roleDescription, setRoleDescription] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState<string | null>(null)
+  const QUERY_KEY = ['drafts', 'interviewer', user?.username] as const
 
-  const activeDrafts = user ? getDraftsForInterviewer(user.username) : []
-  const allMyDrafts = user ? getAllDraftsForInterviewer(user.username) : []
+  const { data: allMyDrafts = [], isLoading } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: () => getDrafts({ assignedTo: user!.username }),
+    enabled: !!user,
+    refetchInterval: 5000,
+  })
+
+  const activeDrafts = allMyDrafts.filter((d) => d.status === 'assigned')
   const submittedCount = allMyDrafts.filter(
     (d) => d.status === 'returned' || d.status === 'finalized'
   ).length
 
+  const [selectedDraft, setSelectedDraft] = useState<JDDraft | null>(null)
+  const [roleDescription, setRoleDescription] = useState('')
+
+  const submitMutation = useMutation({
+    mutationFn: async ({ id, description }: { id: string; description: string }) => {
+      await submitRoleDescription(id, description)
+      await submitDraft(id)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+      showToast('Role description submitted. The recruitment team has been notified.', 'success')
+      setSelectedDraft(null)
+      setRoleDescription('')
+    },
+    onError: (err) => {
+      const msg = err instanceof ApiError ? err.message : 'Failed to submit, please try again.'
+      showToast(msg, 'error')
+    },
+  })
+
+  const dismissMutation = useMutation({
+    mutationFn: (id: string) => dismissDraft(id, user!.username),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
+    onError: () => showToast('Failed to dismiss, please try again.', 'error'),
+  })
+
   function handleSelectDraft(draft: JDDraft) {
     setSelectedDraft(draft)
     setRoleDescription(draft.roleDescription ?? '')
-    setSubmitted(null)
   }
 
   function handleBack() {
-    setSelectedDraft(null)
-    setRoleDescription('')
-    setSubmitted(null)
-  }
-
-  async function handleSubmit() {
-    if (!selectedDraft || !roleDescription.trim()) return
-    setSubmitting(true)
-    await new Promise((r) => setTimeout(r, 400))
-    submitRoleDescription(selectedDraft.id, roleDescription)
-    setSubmitted(selectedDraft.id)
-    setSubmitting(false)
     setSelectedDraft(null)
     setRoleDescription('')
   }
 
   function handleDismiss(id: string) {
     if (!user) return
-    dismissDraftForInterviewer(id, user.username)
+    dismissMutation.mutate(id)
     if (selectedDraft?.id === id) handleBack()
   }
 
@@ -153,15 +202,6 @@ export default function InterviewerJobPostingPage() {
           </div>
         ))}
       </div>
-
-      {submitted && (
-        <div
-          className="mb-4 px-4 py-3 rounded-xl text-sm"
-          style={{ background: '#14532d', color: '#86efac', border: '1px solid #166534', marginBottom: '20px' }}
-        >
-          Role description submitted successfully. The recruitment team has been notified.
-        </div>
-      )}
 
       {/* Detail view */}
       {selectedDraft && (
@@ -228,8 +268,8 @@ export default function InterviewerJobPostingPage() {
           </div>
 
           <button
-            onClick={handleSubmit}
-            disabled={submitting || !roleDescription.trim()}
+            onClick={() => submitMutation.mutate({ id: selectedDraft.id, description: roleDescription })}
+            disabled={submitMutation.isPending || !roleDescription.trim()}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -241,17 +281,17 @@ export default function InterviewerJobPostingPage() {
               color: '#ffffff',
               background: '#1d2ba4',
               border: 'none',
-              cursor: submitting || !roleDescription.trim() ? 'not-allowed' : 'pointer',
-              opacity: submitting || !roleDescription.trim() ? 0.5 : 1,
+              cursor: submitMutation.isPending || !roleDescription.trim() ? 'not-allowed' : 'pointer',
+              opacity: submitMutation.isPending || !roleDescription.trim() ? 0.5 : 1,
               fontFamily: 'Sora, sans-serif',
             }}
-            onMouseEnter={(e) => { if (!submitting && roleDescription.trim()) e.currentTarget.style.background = '#12219e' }}
-            onMouseLeave={(e) => { if (!submitting && roleDescription.trim()) e.currentTarget.style.background = '#1d2ba4' }}
+            onMouseEnter={(e) => { if (!submitMutation.isPending && roleDescription.trim()) e.currentTarget.style.background = '#12219e' }}
+            onMouseLeave={(e) => { if (!submitMutation.isPending && roleDescription.trim()) e.currentTarget.style.background = '#1d2ba4' }}
           >
-            {submitting && (
+            {submitMutation.isPending && (
               <span style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} />
             )}
-            {submitting ? 'Submitting...' : 'Submit Back to Recruitment'}
+            {submitMutation.isPending ? 'Submitting...' : 'Submit Back to Recruitment'}
           </button>
         </div>
       )}
@@ -264,11 +304,20 @@ export default function InterviewerJobPostingPage() {
               Assigned JDs
             </h2>
             <p style={{ color: '#9ca3af', fontSize: '12px', margin: '4px 0 0 0' }}>
-              {allMyDrafts.length === 0 ? 'No job postings assigned yet.' : `${allMyDrafts.length} total — click to fill in a role description`}
+              {isLoading && allMyDrafts.length === 0
+                ? 'Loading...'
+                : allMyDrafts.length === 0
+                ? 'No job postings assigned yet.'
+                : `${allMyDrafts.length} total — click to fill in a role description`}
             </p>
           </div>
 
-          {allMyDrafts.length === 0 ? (
+          {isLoading && allMyDrafts.length === 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <SkeletonCard />
+              <SkeletonCard />
+            </div>
+          ) : allMyDrafts.length === 0 ? (
             <div
               style={{
                 borderRadius: '16px',
@@ -361,9 +410,10 @@ export default function InterviewerJobPostingPage() {
                       </div>
                     </button>
 
-                    {/* Delete button */}
+                    {/* Dismiss button */}
                     <button
                       onClick={() => handleDismiss(draft.id)}
+                      disabled={dismissMutation.isPending}
                       title="Remove from my list"
                       style={{
                         display: 'flex',
@@ -374,14 +424,16 @@ export default function InterviewerJobPostingPage() {
                         borderRadius: '8px',
                         border: '1px solid #37373f',
                         background: 'transparent',
-                        cursor: 'pointer',
+                        cursor: dismissMutation.isPending ? 'not-allowed' : 'pointer',
                         color: '#6b7280',
                         flexShrink: 0,
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(239,68,68,0.1)'
-                        e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'
-                        e.currentTarget.style.color = '#ef4444'
+                        if (!dismissMutation.isPending) {
+                          e.currentTarget.style.background = 'rgba(239,68,68,0.1)'
+                          e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'
+                          e.currentTarget.style.color = '#ef4444'
+                        }
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.background = 'transparent'

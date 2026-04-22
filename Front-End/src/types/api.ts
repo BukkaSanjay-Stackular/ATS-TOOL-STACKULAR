@@ -1,13 +1,14 @@
 import type { ExperienceLevel, JDStatus, UserRole } from './index'
 
 export class ApiError extends Error {
-  constructor(
-    public override message: string,
-    public status: number,
-    public fields?: Record<string, string>
-  ) {
+  status: number
+  fields?: Record<string, string>
+
+  constructor(message: string, status: number, fields?: Record<string, string>) {
     super(message)
     this.name = 'ApiError'
+    this.status = status
+    this.fields = fields
   }
 }
 
@@ -36,10 +37,10 @@ export interface ApiDraft {
   stipend_salary: string
   fulltime_offer_salary: string
   years_of_experience: string
-  role_description: string
-  assigned_to: string[]
+  role_description: string | null
+  assigned_to: string[] | null
   status: JDStatus
   created_by: string
   created_at: string
-  generated_jd: string
+  generated_jd: string | null
 }

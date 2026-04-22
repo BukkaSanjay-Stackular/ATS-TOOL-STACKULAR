@@ -27,8 +27,3 @@ export interface JDDraft {
   createdAt: string
   generatedJD: string
 }
-
-export interface GeneratedJD {
-  jobTitle: string
-  content: string
-}

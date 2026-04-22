@@ -14,28 +14,27 @@ function mapDraft(d: ApiDraft): JDDraft {
     stipendSalary: d.stipend_salary,
     fulltimeOfferSalary: d.fulltime_offer_salary,
     yearsOfExperience: d.years_of_experience,
-    roleDescription: d.role_description,
-    assignedTo: d.assigned_to,
+    roleDescription: d.role_description ?? '',
+    assignedTo: d.assigned_to ?? [],
     status: d.status,
     createdBy: d.created_by,
     createdAt: d.created_at,
-    generatedJD: d.generated_jd,
+    generatedJD: d.generated_jd ?? '',
   }
 }
 
 export interface CreateDraftPayload {
-  experienceLevel: ExperienceLevel
-  jobTitle: string
+  experience_level: ExperienceLevel | null
+  job_title: string
   location: string
-  workMode: string
-  workHours: string
+  work_mode: string
+  work_hours: string
   duration: string
-  stipendSalary: string
-  fulltimeOfferSalary: string
-  yearsOfExperience: string
+  stipend_salary: string
+  fulltime_offer_salary: string
+  years_of_experience: string
   roleDescription: string
-  assignedTo?: string[]
-  createdBy: string
+  assignedTo: string[]
 }
 
 export async function getDrafts(query: { createdBy?: string; assignedTo?: string }): Promise<JDDraft[]> {
@@ -50,17 +49,16 @@ export async function createDraft(payload: CreateDraftPayload): Promise<JDDraft>
   const raw = await apiFetch<ApiDraft>('/drafts', {
     method: 'POST',
     body: JSON.stringify({
-      experience_level: payload.experienceLevel,
-      job_title: payload.jobTitle,
+      experience_level: payload.experience_level,
+      job_title: payload.job_title,
       location: payload.location,
-      work_mode: payload.workMode,
-      work_hours: payload.workHours,
+      work_mode: payload.work_mode,
+      work_hours: payload.work_hours,
       duration: payload.duration,
-      stipend_salary: payload.stipendSalary,
-      fulltime_offer_salary: payload.fulltimeOfferSalary,
-      years_of_experience: payload.yearsOfExperience,
+      stipend_salary: payload.stipend_salary,
+      fulltime_offer_salary: payload.fulltime_offer_salary,
+      years_of_experience: payload.years_of_experience,
       role_description: payload.roleDescription,
-      created_by: payload.createdBy,
     }),
   })
   return mapDraft(raw)
@@ -69,7 +67,7 @@ export async function createDraft(payload: CreateDraftPayload): Promise<JDDraft>
 export async function assignDraft(id: string, assignedTo: string[]): Promise<JDDraft> {
   const raw = await apiFetch<ApiDraft>(`/drafts/${id}/assign`, {
     method: 'PATCH',
-    body: JSON.stringify({ assignedTo }),
+    body: JSON.stringify({ assigned_to: assignedTo }),
   })
   return mapDraft(raw)
 }
@@ -77,7 +75,7 @@ export async function assignDraft(id: string, assignedTo: string[]): Promise<JDD
 export async function submitRoleDescription(id: string, roleDescription: string): Promise<JDDraft> {
   const raw = await apiFetch<ApiDraft>(`/drafts/${id}/role-description`, {
     method: 'PATCH',
-    body: JSON.stringify({ roleDescription }),
+    body: JSON.stringify({ role_description: roleDescription }),
   })
   return mapDraft(raw)
 }

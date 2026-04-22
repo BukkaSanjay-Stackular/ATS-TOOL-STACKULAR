@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   GraduationCap,
   UserPlus,
@@ -20,10 +21,21 @@ import {
   LayoutList,
 } from 'lucide-react'
 import { useAuth } from '../../context/useAuth'
-import { useJD } from '../../context/useJD'
-import { generateJD } from '../../services/jdService'
-import { INTERVIEWERS } from '../../constants/users'
-import type { ExperienceLevel, JDDraft, JDStatus } from '../../types'
+import { useToast } from '../../hooks/useToast'
+import { getDrafts, createDraft, assignDraft, generatePreview, deleteDraft } from '../../services/jdApi'
+import { JDPreviewModal } from '../../components/JDPreviewModal'
+import { DownloadButton } from '../../components/DownloadButton'
+import { ApiError } from '../../types/api'
+import type { CreateDraftPayload } from '../../services/jdApi'
+import type { ExperienceLevel, JDStatus } from '../../types'
+
+const INTERVIEWERS = [
+  { username: 'Karthik', name: 'Karthik' },
+  { username: 'Fardeen', name: 'Fardeen' },
+  { username: 'Jay', name: 'Jay' },
+  { username: 'Nadem', name: 'Nadem' },
+  { username: 'Javeed', name: 'Javeed' },
+]
 
 const LOCATIONS = ['Hyderabad', 'Chicago', 'Columbia', 'San Jose']
 const WORK_MODES = ['On-site', 'Remote', 'Hybrid']
@@ -160,34 +172,68 @@ function FieldLabel({ children, required }: { children: React.ReactNode; require
   )
 }
 
+function SkeletonCard() {
+  return (
+    <div
+      style={{
+        background: '#161719',
+        border: '1px solid #37373f',
+        borderRadius: '10px',
+        padding: '12px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '16px',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+        <div style={{ width: '140px', height: '14px', borderRadius: '4px', background: '#2a2d31' }} />
+        <div style={{ width: '60px', height: '20px', borderRadius: '999px', background: '#2a2d31' }} />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ width: '56px', height: '20px', borderRadius: '999px', background: '#2a2d31' }} />
+        <div style={{ width: '60px', height: '12px', borderRadius: '4px', background: '#2a2d31' }} />
+        <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#2a2d31' }} />
+      </div>
+    </div>
+  )
+}
+
 export default function JobPostingPage() {
   const { user } = useAuth()
-  const { createDraft, updateDraft, deleteDraft, assignDraft, finalizeDraft, getDraftsForRecruitment } = useJD()
+  const { showToast } = useToast()
+  const queryClient = useQueryClient()
+
+  const QUERY_KEY = ['drafts', user?.username] as const
+
+  const { data: allDrafts = [], isLoading } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: () => getDrafts({ createdBy: user!.username }),
+    enabled: !!user,
+  })
+
+  const returnedDrafts = allDrafts.filter((d) => d.status === 'returned')
 
   const [form, setForm] = useState<FormState>(emptyForm)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showAssignDropdown, setShowAssignDropdown] = useState(false)
   const [pendingAssigned, setPendingAssigned] = useState<string[]>([])
-  const [loading, setLoading] = useState(false)
-  const [successMsg, setSuccessMsg] = useState('')
-  const [generatedContent, setGeneratedContent] = useState('')
-  const [showGenerated, setShowGenerated] = useState(false)
-  const [copiedJD, setCopiedJD] = useState(false)
+  const [previewDraftId, setPreviewDraftId] = useState<string | null>(null)
+  const [previewJD, setPreviewJD] = useState('')
+  const [copiedIds, setCopiedIds] = useState<Set<string>>(new Set())
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [generatingDraftId, setGeneratingDraftId] = useState<string | null>(null)
   const [allDraftsOpen, setAllDraftsOpen] = useState(false)
-
-  const myDrafts = user ? getDraftsForRecruitment(user.username) : []
-  const returnedDrafts = myDrafts.filter((d) => d.status === 'returned')
 
   function setField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
+    if (fieldErrors[key]) setFieldErrors((prev) => { const next = { ...prev }; delete next[key]; return next })
   }
 
   function handleSelectLevel(level: ExperienceLevel) {
     setForm({ ...emptyForm, experience_level: level })
     setEditingId(null)
-    setShowGenerated(false)
-    setGeneratedContent('')
-    setSuccessMsg('')
+    setFieldErrors({})
   }
 
   function isFormComplete(): boolean {
@@ -198,10 +244,9 @@ export default function JobPostingPage() {
     return true
   }
 
-  function handleSaveDraft() {
-    if (!user || !form.experience_level) return
-    const data = {
-      experience_level: form.experience_level,
+  function buildPayload(): CreateDraftPayload {
+    return {
+      experience_level: form.experience_level!,
       job_title: form.job_title,
       location: form.location,
       work_mode: form.work_mode,
@@ -212,109 +257,119 @@ export default function JobPostingPage() {
       years_of_experience: form.years_of_experience,
       roleDescription: form.roleDescription,
       assignedTo: form.assignedTo,
-      createdBy: user.username,
     }
-    if (editingId) {
-      updateDraft(editingId, data)
+  }
+
+  function handleApiError(err: unknown, fallbackMsg: string) {
+    if (err instanceof ApiError && err.status === 400 && err.fields) {
+      setFieldErrors(err.fields as Record<string, string>)
     } else {
-      createDraft(data)
+      showToast(fallbackMsg, 'error')
     }
-    setForm(emptyForm)
-    setEditingId(null)
-    setSuccessMsg('Draft saved successfully.')
-    setTimeout(() => setSuccessMsg(''), 3000)
+  }
+
+  const saveDraftMutation = useMutation({
+    mutationFn: (payload: CreateDraftPayload) => createDraft(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+      showToast('Draft saved successfully.', 'success')
+      setForm(emptyForm)
+      setEditingId(null)
+    },
+    onError: (err) => handleApiError(err, 'Failed to save draft, please try again.'),
+  })
+
+  const assignMutation = useMutation({
+    mutationFn: async (payload: CreateDraftPayload) => {
+      const draft = await createDraft(payload)
+      await assignDraft(draft.id, payload.assignedTo ?? [])
+      return { draft, assignedTo: payload.assignedTo ?? [] }
+    },
+    onSuccess: ({ assignedTo }) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+      showToast(`Assigned to ${assignedTo.join(', ')} — visible in their portal.`, 'success')
+      setForm(emptyForm)
+      setEditingId(null)
+    },
+    onError: (err) => handleApiError(err, 'Failed to assign, please try again.'),
+  })
+
+  const generateFromFormMutation = useMutation({
+    mutationFn: async (payload: CreateDraftPayload) => {
+      const draft = await createDraft(payload)
+      const result = await generatePreview(draft.id)
+      return { draftId: draft.id, previewJD: result.previewJD }
+    },
+    onSuccess: ({ draftId, previewJD: preview }) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+      setPreviewDraftId(draftId)
+      setPreviewJD(preview)
+      setForm(emptyForm)
+      setEditingId(null)
+    },
+    onError: (err) => handleApiError(err, 'Failed to generate JD, please try again.'),
+  })
+
+  const generateFromDraftMutation = useMutation({
+    mutationFn: (draftId: string) => generatePreview(draftId),
+    onSuccess: (result, draftId) => {
+      setPreviewDraftId(draftId)
+      setPreviewJD(result.previewJD)
+      setGeneratingDraftId(null)
+    },
+    onError: () => {
+      showToast('Failed to generate JD, please try again.', 'error')
+      setGeneratingDraftId(null)
+    },
+  })
+
+  const deleteDraftMutation = useMutation({
+    mutationFn: (id: string) => deleteDraft(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
+    onError: () => showToast('Failed to delete, please try again.', 'error'),
+  })
+
+  function handleSaveDraft() {
+    if (!user || !form.experience_level) return
+    saveDraftMutation.mutate(buildPayload())
   }
 
   function handleAssign() {
     if (!user || !form.experience_level || form.assignedTo.length === 0) return
-    const data = {
-      experience_level: form.experience_level,
-      job_title: form.job_title,
-      location: form.location,
-      work_mode: form.work_mode,
-      work_hours: form.work_hours,
-      duration: form.duration,
-      stipend_salary: form.stipend_salary,
-      fulltime_offer_salary: form.fulltime_offer_salary,
-      years_of_experience: form.years_of_experience,
-      roleDescription: form.roleDescription,
-      assignedTo: form.assignedTo,
-      createdBy: user.username,
-    }
+    assignMutation.mutate(buildPayload())
+  }
+
+  function handleCreateJDFromForm() {
+    if (!user || !form.experience_level) return
     if (editingId) {
-      updateDraft(editingId, { ...data, status: 'assigned' })
+      setGeneratingDraftId(editingId)
+      generateFromDraftMutation.mutate(editingId)
     } else {
-      const id = createDraft(data)
-      assignDraft(id, form.assignedTo)
-    }
-    setForm(emptyForm)
-    setEditingId(null)
-    setSuccessMsg(`Assigned to ${form.assignedTo.join(', ')} — visible in their portal now.`)
-    setTimeout(() => setSuccessMsg(''), 4000)
-  }
-
-  async function handleCreateJD(draftId?: string) {
-    if (!user) return
-
-    let targetDraft: JDDraft | undefined
-    if (draftId) {
-      targetDraft = myDrafts.find((d) => d.id === draftId)
-    } else if (isFormComplete() && form.experience_level) {
-      const data = {
-        experience_level: form.experience_level,
-        job_title: form.job_title,
-        location: form.location,
-        work_mode: form.work_mode,
-        work_hours: form.work_hours,
-        duration: form.duration,
-        stipend_salary: form.stipend_salary,
-        fulltime_offer_salary: form.fulltime_offer_salary,
-        years_of_experience: form.years_of_experience,
-        roleDescription: form.roleDescription,
-        assignedTo: form.assignedTo,
-        createdBy: user.username,
-      }
-      const newId = editingId ?? createDraft(data)
-      if (!editingId) {
-        targetDraft = { ...data, id: newId, createdAt: new Date().toISOString(), status: 'draft', generatedJD: '' }
-      } else {
-        updateDraft(editingId, data)
-        targetDraft = myDrafts.find((d) => d.id === editingId)
-      }
-    }
-
-    if (!targetDraft) return
-
-    setLoading(true)
-    try {
-      const content = await generateJD(targetDraft)
-      finalizeDraft(targetDraft.id, content)
-      setGeneratedContent(content)
-      setShowGenerated(true)
-      setForm(emptyForm)
-      setEditingId(null)
-    } finally {
-      setLoading(false)
+      generateFromFormMutation.mutate(buildPayload())
     }
   }
 
-  function handleEditReturned(draft: JDDraft) {
+  function handleCreateJDFromDraft(draftId: string) {
+    setGeneratingDraftId(draftId)
+    generateFromDraftMutation.mutate(draftId)
+  }
+
+  function handleEditReturned(draft: typeof allDrafts[0]) {
     setForm({
-      experience_level: draft.experience_level,
-      job_title: draft.job_title,
+      experience_level: draft.experienceLevel,
+      job_title: draft.jobTitle,
       location: draft.location,
-      work_mode: draft.work_mode,
-      work_hours: draft.work_hours,
+      work_mode: draft.workMode,
+      work_hours: draft.workHours,
       duration: draft.duration,
-      stipend_salary: draft.stipend_salary,
-      fulltime_offer_salary: draft.fulltime_offer_salary,
-      years_of_experience: draft.years_of_experience,
+      stipend_salary: draft.stipendSalary,
+      fulltime_offer_salary: draft.fulltimeOfferSalary,
+      years_of_experience: draft.yearsOfExperience,
       roleDescription: draft.roleDescription,
       assignedTo: draft.assignedTo,
     })
     setEditingId(draft.id)
-    setShowGenerated(false)
-    setGeneratedContent('')
+    setFieldErrors({})
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -334,16 +389,20 @@ export default function JobPostingPage() {
     setShowAssignDropdown(true)
   }
 
-  async function handleCopyJD() {
-    await navigator.clipboard.writeText(generatedContent)
-    setCopiedJD(true)
-    setTimeout(() => setCopiedJD(false), 2000)
+  async function handleCopyJD(id: string, text: string) {
+    await navigator.clipboard.writeText(text)
+    setCopiedIds((prev) => new Set(prev).add(id))
+    setTimeout(() => setCopiedIds((prev) => { const next = new Set(prev); next.delete(id); return next }), 2000)
   }
 
   const hasForm = form.experience_level !== null
+  const isGeneratingFromForm = generateFromFormMutation.isPending
+  const isSaving = saveDraftMutation.isPending
+  const isAssigning = assignMutation.isPending
+  const isBusy = isSaving || isAssigning || isGeneratingFromForm || generateFromDraftMutation.isPending
 
   const levelMeta = {
-    intern: { label: 'Intern', desc: 'Short-term internship with stipend_salary', Icon: GraduationCap },
+    intern: { label: 'Intern', desc: 'Short-term internship with stipend', Icon: GraduationCap },
     fresher: { label: 'Fresher', desc: 'Entry-level, no prior experience required', Icon: UserPlus },
     experienced: { label: 'Experienced', desc: 'Candidates with specific years of experience', Icon: Award },
   }
@@ -385,136 +444,14 @@ export default function JobPostingPage() {
         </p>
       </div>
 
-      {/* Success toast */}
-      {successMsg && (
-        <div
-          style={{
-            marginBottom: '20px',
-            padding: '12px 16px',
-            borderRadius: '10px',
-            background: 'rgba(20, 83, 45, 0.6)',
-            color: '#86efac',
-            border: '1px solid #166534',
-            fontSize: '13px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          <Check style={{ width: '14px', height: '14px', flexShrink: 0 }} />
-          {successMsg}
-        </div>
-      )}
-
-      {/* Generated JD result */}
-      {showGenerated && generatedContent && (
-        <div style={{ marginBottom: '32px' }}>
-          <div
-            style={{
-              background: '#161719',
-              border: '1px solid #37373f',
-              borderRadius: '16px',
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '16px 20px',
-                borderBottom: '1px solid #37373f',
-                background: 'rgba(29, 43, 164, 0.06)',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
-                    background: 'rgba(29, 43, 164, 0.2)',
-                    border: '1px solid rgba(29, 43, 164, 0.4)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Sparkles style={{ width: '14px', height: '14px', color: '#6ea8fe' }} />
-                </div>
-                <div>
-                  <p style={{ color: '#ffffff', fontWeight: 600, fontSize: '14px', margin: 0 }}>
-                    Job Description Generated
-                  </p>
-                  <p style={{ color: '#9ca3af', fontSize: '12px', margin: 0 }}>
-                    AI-generated — review before publishing
-                  </p>
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button
-                  onClick={handleCopyJD}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '7px 14px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    fontWeight: 500,
-                    color: copiedJD ? '#86efac' : '#9ca3af',
-                    border: '1px solid #37373f',
-                    background: 'transparent',
-                    cursor: 'pointer',
-                    fontFamily: 'Sora, sans-serif',
-                    transition: 'color 0.15s',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = '#1a1d20')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                >
-                  {copiedJD ? (
-                    <Check style={{ width: '13px', height: '13px' }} />
-                  ) : (
-                    <Copy style={{ width: '13px', height: '13px' }} />
-                  )}
-                  {copiedJD ? 'Copied!' : 'Copy'}
-                </button>
-                <button
-                  onClick={() => { setShowGenerated(false); setGeneratedContent('') }}
-                  style={{
-                    padding: '7px 14px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    fontWeight: 500,
-                    color: '#9ca3af',
-                    border: '1px solid #37373f',
-                    background: 'transparent',
-                    cursor: 'pointer',
-                    fontFamily: 'Sora, sans-serif',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = '#1a1d20')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                >
-                  Dismiss
-                </button>
-              </div>
-            </div>
-            <div style={{ padding: '24px' }}>
-              <pre
-                style={{
-                  whiteSpace: 'pre-wrap',
-                  fontFamily: 'Sora, sans-serif',
-                  fontSize: '13px',
-                  lineHeight: '1.75',
-                  color: '#e5e7eb',
-                  margin: 0,
-                }}
-              >
-                {generatedContent}
-              </pre>
-            </div>
-          </div>
-        </div>
+      {/* JD Preview Modal */}
+      {previewDraftId && previewJD && (
+        <JDPreviewModal
+          draftId={previewDraftId}
+          previewJD={previewJD}
+          queryKey={QUERY_KEY}
+          onClose={() => { setPreviewDraftId(null); setPreviewJD('') }}
+        />
       )}
 
       {/* Experience Level Selector */}
@@ -538,7 +475,7 @@ export default function JobPostingPage() {
                 level: 'intern' as ExperienceLevel,
                 Icon: GraduationCap,
                 label: 'Intern',
-                desc: 'Short-term with stipend_salary',
+                desc: 'Short-term with stipend',
                 gradient: 'linear-gradient(135deg, rgba(29,43,164,0.12) 0%, rgba(110,168,254,0.06) 100%)',
                 activeGradient: 'linear-gradient(135deg, rgba(29,43,164,0.22) 0%, rgba(110,168,254,0.10) 100%)',
               },
@@ -655,7 +592,7 @@ export default function JobPostingPage() {
               {/* Section: Role Details */}
               <SectionLabel icon={Briefcase} text="Role Details" />
 
-              {/* Job Title — full width */}
+              {/* Job Title */}
               <div style={{ marginBottom: '20px' }}>
                 <FieldLabel required>Job Title</FieldLabel>
                 <input
@@ -663,13 +600,19 @@ export default function JobPostingPage() {
                   value={form.job_title}
                   onChange={(e) => setField('job_title', e.target.value)}
                   placeholder="e.g. Frontend Developer, Data Analyst"
-                  style={inputStyle}
-                  onFocus={(e) => (e.currentTarget.style.borderColor = '#1d2ba4')}
-                  onBlur={(e) => (e.currentTarget.style.borderColor = '#37373f')}
+                  style={{
+                    ...inputStyle,
+                    ...(fieldErrors.job_title ? { borderColor: '#ef4444' } : {}),
+                  }}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = fieldErrors.job_title ? '#ef4444' : '#1d2ba4')}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = fieldErrors.job_title ? '#ef4444' : '#37373f')}
                 />
+                {fieldErrors.job_title && (
+                  <p style={{ color: '#f87171', fontSize: '11px', marginTop: '4px' }}>{fieldErrors.job_title}</p>
+                )}
               </div>
 
-              {/* Intern-specific: Duration (full width, prominent) */}
+              {/* Intern-specific: Duration */}
               {form.experience_level === 'intern' && (
                 <div style={{ marginBottom: '20px' }}>
                   <FieldLabel required>Duration</FieldLabel>
@@ -685,7 +628,7 @@ export default function JobPostingPage() {
                 </div>
               )}
 
-              {/* Location + Work Mode + Work Hours — 3 col grid */}
+              {/* Location + Work Mode + Work Hours */}
               <div
                 style={{
                   display: 'grid',
@@ -752,16 +695,10 @@ export default function JobPostingPage() {
                 </div>
               </div>
 
-              {/* Compensation section — level-specific, 2-col where applicable */}
+              {/* Compensation — intern */}
               {form.experience_level === 'intern' && (
                 <>
-                  <div
-                    style={{
-                      height: '1px',
-                      background: '#37373f',
-                      margin: '24px 0',
-                    }}
-                  />
+                  <div style={{ height: '1px', background: '#37373f', margin: '24px 0' }} />
                   <SectionLabel icon={DollarSign} text="Compensation" />
                   <div style={{ marginBottom: '20px' }}>
                     <FieldLabel>Stipend / Salary INR</FieldLabel>
@@ -778,6 +715,7 @@ export default function JobPostingPage() {
                 </>
               )}
 
+              {/* Compensation — experienced */}
               {form.experience_level === 'experienced' && (
                 <>
                   <div style={{ height: '1px', background: '#37373f', margin: '24px 0' }} />
@@ -818,6 +756,7 @@ export default function JobPostingPage() {
                 </>
               )}
 
+              {/* Compensation — fresher */}
               {form.experience_level === 'fresher' && (
                 <>
                   <div style={{ height: '1px', background: '#37373f', margin: '24px 0' }} />
@@ -1045,6 +984,7 @@ export default function JobPostingPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <button
                   onClick={handleSaveDraft}
+                  disabled={isBusy || !form.job_title}
                   style={{
                     padding: '10px 20px',
                     borderRadius: '9px',
@@ -1053,17 +993,18 @@ export default function JobPostingPage() {
                     color: '#e5e7eb',
                     border: '1px solid #37373f',
                     background: 'transparent',
-                    cursor: 'pointer',
+                    cursor: isBusy || !form.job_title ? 'not-allowed' : 'pointer',
+                    opacity: isBusy || !form.job_title ? 0.5 : 1,
                     fontFamily: 'Sora, sans-serif',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = '#1a1d20')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  onMouseEnter={(e) => { if (!isBusy && form.job_title) e.currentTarget.style.background = '#1a1d20' }}
+                  onMouseLeave={(e) => { if (!isBusy && form.job_title) e.currentTarget.style.background = 'transparent' }}
                 >
-                  Save Draft
+                  {isSaving ? 'Saving...' : 'Save Draft'}
                 </button>
                 <button
                   onClick={handleAssign}
-                  disabled={form.assignedTo.length === 0 || !form.experience_level || !form.job_title}
+                  disabled={isBusy || form.assignedTo.length === 0 || !form.experience_level || !form.job_title}
                   title={form.assignedTo.length === 0 ? 'Select at least one interviewer to assign' : ''}
                   style={{
                     display: 'flex',
@@ -1073,26 +1014,26 @@ export default function JobPostingPage() {
                     borderRadius: '9px',
                     fontSize: '14px',
                     fontWeight: 600,
-                    color: form.assignedTo.length > 0 && form.job_title ? '#ffffff' : '#6b7280',
-                    background: form.assignedTo.length > 0 && form.job_title ? 'rgba(29,43,164,0.15)' : 'transparent',
-                    border: `1px solid ${form.assignedTo.length > 0 && form.job_title ? 'rgba(29,43,164,0.5)' : '#37373f'}`,
-                    cursor: form.assignedTo.length > 0 && form.job_title ? 'pointer' : 'not-allowed',
+                    color: form.assignedTo.length > 0 && form.job_title && !isBusy ? '#ffffff' : '#6b7280',
+                    background: form.assignedTo.length > 0 && form.job_title && !isBusy ? 'rgba(29,43,164,0.15)' : 'transparent',
+                    border: `1px solid ${form.assignedTo.length > 0 && form.job_title && !isBusy ? 'rgba(29,43,164,0.5)' : '#37373f'}`,
+                    cursor: form.assignedTo.length > 0 && form.job_title && !isBusy ? 'pointer' : 'not-allowed',
                     fontFamily: 'Sora, sans-serif',
-                    opacity: form.assignedTo.length > 0 && form.job_title ? 1 : 0.5,
+                    opacity: form.assignedTo.length > 0 && form.job_title && !isBusy ? 1 : 0.5,
                   }}
                   onMouseEnter={(e) => {
-                    if (form.assignedTo.length > 0 && form.job_title) e.currentTarget.style.background = 'rgba(29,43,164,0.25)'
+                    if (form.assignedTo.length > 0 && form.job_title && !isBusy) e.currentTarget.style.background = 'rgba(29,43,164,0.25)'
                   }}
                   onMouseLeave={(e) => {
-                    if (form.assignedTo.length > 0 && form.job_title) e.currentTarget.style.background = 'rgba(29,43,164,0.15)'
+                    if (form.assignedTo.length > 0 && form.job_title && !isBusy) e.currentTarget.style.background = 'rgba(29,43,164,0.15)'
                   }}
                 >
                   <UserCheck style={{ width: '14px', height: '14px' }} />
-                  Assign
+                  {isAssigning ? 'Assigning...' : 'Assign'}
                 </button>
                 <button
-                  onClick={() => handleCreateJD()}
-                  disabled={!isFormComplete() || loading}
+                  onClick={handleCreateJDFromForm}
+                  disabled={!isFormComplete() || isBusy}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -1104,15 +1045,15 @@ export default function JobPostingPage() {
                     color: '#ffffff',
                     background: '#1d2ba4',
                     border: 'none',
-                    cursor: isFormComplete() && !loading ? 'pointer' : 'not-allowed',
-                    opacity: isFormComplete() && !loading ? 1 : 0.5,
+                    cursor: isFormComplete() && !isBusy ? 'pointer' : 'not-allowed',
+                    opacity: isFormComplete() && !isBusy ? 1 : 0.5,
                     fontFamily: 'Sora, sans-serif',
-                    boxShadow: isFormComplete() && !loading ? '0 4px 16px rgba(29,43,164,0.35)' : 'none',
+                    boxShadow: isFormComplete() && !isBusy ? '0 4px 16px rgba(29,43,164,0.35)' : 'none',
                   }}
-                  onMouseEnter={(e) => { if (isFormComplete() && !loading) e.currentTarget.style.background = '#12219e' }}
-                  onMouseLeave={(e) => { if (isFormComplete() && !loading) e.currentTarget.style.background = '#1d2ba4' }}
+                  onMouseEnter={(e) => { if (isFormComplete() && !isBusy) e.currentTarget.style.background = '#12219e' }}
+                  onMouseLeave={(e) => { if (isFormComplete() && !isBusy) e.currentTarget.style.background = '#1d2ba4' }}
                 >
-                  {loading ? (
+                  {isGeneratingFromForm ? (
                     <span
                       style={{
                         width: '14px',
@@ -1127,7 +1068,7 @@ export default function JobPostingPage() {
                   ) : (
                     <Sparkles style={{ width: '14px', height: '14px' }} />
                   )}
-                  {loading ? 'Generating JD...' : 'Create JD'}
+                  {isGeneratingFromForm ? 'Generating JD...' : 'Create JD'}
                 </button>
               </div>
             </div>
@@ -1337,7 +1278,8 @@ export default function JobPostingPage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {returnedDrafts.map((draft) => {
-              const meta = draft.experience_level ? levelMeta[draft.experience_level] : null
+              const meta = draft.experienceLevel ? levelMeta[draft.experienceLevel] : null
+              const isGenerating = generatingDraftId === draft.id
               return (
                 <div
                   key={draft.id}
@@ -1373,7 +1315,7 @@ export default function JobPostingPage() {
                         </div>
                       )}
                       <p style={{ fontWeight: 700, color: '#ffffff', fontSize: '15px', margin: 0 }}>
-                        {draft.job_title}
+                        {draft.jobTitle}
                       </p>
                       <span
                         style={{
@@ -1385,7 +1327,7 @@ export default function JobPostingPage() {
                           fontWeight: 600,
                         }}
                       >
-                        {draft.experience_level}
+                        {draft.experienceLevel}
                       </span>
                     </div>
                     <p style={{ color: '#6b7280', fontSize: '12px', margin: '0 0 8px 0' }}>
@@ -1415,11 +1357,11 @@ export default function JobPostingPage() {
                       onMouseEnter={(e) => (e.currentTarget.style.background = '#1a1d20')}
                       onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                     >
-                      Edit
+                      Review
                     </button>
                     <button
-                      onClick={() => handleCreateJD(draft.id)}
-                      disabled={loading}
+                      onClick={() => handleCreateJDFromDraft(draft.id)}
+                      disabled={isGenerating || !!generatingDraftId}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -1431,14 +1373,14 @@ export default function JobPostingPage() {
                         color: '#ffffff',
                         background: '#1d2ba4',
                         border: 'none',
-                        cursor: loading ? 'not-allowed' : 'pointer',
-                        opacity: loading ? 0.5 : 1,
+                        cursor: isGenerating || !!generatingDraftId ? 'not-allowed' : 'pointer',
+                        opacity: isGenerating || !!generatingDraftId ? 0.5 : 1,
                         fontFamily: 'Sora, sans-serif',
                       }}
-                      onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = '#12219e' }}
-                      onMouseLeave={(e) => { if (!loading) e.currentTarget.style.background = '#1d2ba4' }}
+                      onMouseEnter={(e) => { if (!isGenerating && !generatingDraftId) e.currentTarget.style.background = '#12219e' }}
+                      onMouseLeave={(e) => { if (!isGenerating && !generatingDraftId) e.currentTarget.style.background = '#1d2ba4' }}
                     >
-                      {loading ? (
+                      {isGenerating ? (
                         <span
                           style={{
                             width: '12px',
@@ -1464,54 +1406,64 @@ export default function JobPostingPage() {
       )}
 
       {/* All JDs collapsible */}
-      {myDrafts.length > 0 && (
-        <div style={{ marginTop: '40px' }}>
-          <button
-            onClick={() => setAllDraftsOpen((v) => !v)}
+      <div style={{ marginTop: '40px' }}>
+        <button
+          onClick={() => setAllDraftsOpen((v) => !v)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '0',
+            marginBottom: '16px',
+            fontFamily: 'Sora, sans-serif',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.75')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+        >
+          <div
             style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '9px',
+              background: '#1a1d20',
+              border: '1px solid #37373f',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '0',
-              marginBottom: '16px',
-              fontFamily: 'Sora, sans-serif',
+              justifyContent: 'center',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.75')}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
           >
-            <div
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '9px',
-                background: '#1a1d20',
-                border: '1px solid #37373f',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {allDraftsOpen
-                ? <ChevronUp style={{ width: '14px', height: '14px', color: '#9ca3af' }} />
-                : <ChevronDown style={{ width: '14px', height: '14px', color: '#9ca3af' }} />
-              }
-            </div>
-            <div style={{ textAlign: 'left' }}>
-              <span style={{ color: '#ffffff', fontSize: '16px', fontWeight: 700, display: 'block' }}>
-                All JDs
-              </span>
-              <span style={{ color: '#9ca3af', fontSize: '12px' }}>
-                {myDrafts.length} total
-              </span>
-            </div>
-          </button>
+            {allDraftsOpen
+              ? <ChevronUp style={{ width: '14px', height: '14px', color: '#9ca3af' }} />
+              : <ChevronDown style={{ width: '14px', height: '14px', color: '#9ca3af' }} />
+            }
+          </div>
+          <div style={{ textAlign: 'left' }}>
+            <span style={{ color: '#ffffff', fontSize: '16px', fontWeight: 700, display: 'block' }}>
+              All JDs
+            </span>
+            <span style={{ color: '#9ca3af', fontSize: '12px' }}>
+              {isLoading ? 'Loading...' : `${allDrafts.length} total`}
+            </span>
+          </div>
+        </button>
 
-          {allDraftsOpen && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              {myDrafts.map((draft) => (
+        {allDraftsOpen && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {isLoading && allDrafts.length === 0 ? (
+              <>
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </>
+            ) : allDrafts.length === 0 ? (
+              <p style={{ color: '#6b7280', fontSize: '13px', padding: '12px 0' }}>
+                No job postings yet. Create your first one above.
+              </p>
+            ) : (
+              allDrafts.map((draft) => (
                 <div
                   key={draft.id}
                   style={{
@@ -1539,7 +1491,7 @@ export default function JobPostingPage() {
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {draft.job_title || 'Untitled'}
+                      {draft.jobTitle || 'Untitled'}
                     </p>
                     <span
                       style={{
@@ -1553,16 +1505,49 @@ export default function JobPostingPage() {
                         flexShrink: 0,
                       }}
                     >
-                      {draft.experience_level}
+                      {draft.experienceLevel}
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
                     {statusBadge(draft.status)}
+                    {draft.status === 'finalized' && draft.generatedJD && (
+                      <>
+                        <button
+                          onClick={() => handleCopyJD(draft.id, draft.generatedJD)}
+                          title="Copy JD"
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            padding: '5px 10px',
+                            borderRadius: '7px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            color: copiedIds.has(draft.id) ? '#86efac' : '#9ca3af',
+                            border: '1px solid #37373f',
+                            background: 'transparent',
+                            cursor: 'pointer',
+                            fontFamily: 'Sora, sans-serif',
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = '#1a1d20')}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          {copiedIds.has(draft.id) ? (
+                            <Check style={{ width: '12px', height: '12px' }} />
+                          ) : (
+                            <Copy style={{ width: '12px', height: '12px' }} />
+                          )}
+                          {copiedIds.has(draft.id) ? 'Copied!' : 'Copy'}
+                        </button>
+                        <DownloadButton draftId={draft.id} jobTitle={draft.jobTitle} />
+                      </>
+                    )}
                     <span style={{ fontSize: '11px', color: '#6b7280' }}>
                       {new Date(draft.createdAt).toLocaleDateString()}
                     </span>
                     <button
-                      onClick={() => deleteDraft(draft.id)}
+                      onClick={() => deleteDraftMutation.mutate(draft.id)}
+                      disabled={deleteDraftMutation.isPending}
                       title="Delete JD"
                       style={{
                         display: 'flex',
@@ -1573,14 +1558,16 @@ export default function JobPostingPage() {
                         borderRadius: '6px',
                         border: '1px solid #37373f',
                         background: 'transparent',
-                        cursor: 'pointer',
+                        cursor: deleteDraftMutation.isPending ? 'not-allowed' : 'pointer',
                         color: '#6b7280',
                         flexShrink: 0,
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(239,68,68,0.1)'
-                        e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'
-                        e.currentTarget.style.color = '#ef4444'
+                        if (!deleteDraftMutation.isPending) {
+                          e.currentTarget.style.background = 'rgba(239,68,68,0.1)'
+                          e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'
+                          e.currentTarget.style.color = '#ef4444'
+                        }
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.background = 'transparent'
@@ -1592,13 +1579,12 @@ export default function JobPostingPage() {
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+              ))
+            )}
+          </div>
+        )}
+      </div>
 
-      {/* Keyframe for spinner — injected via style tag */}
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }
