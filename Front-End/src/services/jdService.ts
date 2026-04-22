@@ -1,62 +1,65 @@
 import type { JDDraft } from '../types'
 
+/**
+ * Generate JD by calling FastAPI server directly
+ * TEST BRANCH: Connects to FastAPI at http://localhost:8000
+ * 
+ * Note: In production, this should call .NET Backend instead:
+ *       http://localhost:5000/api/jd/generate
+ */
 export async function generateJD(draft: JDDraft): Promise<string> {
-  await new Promise((resolve) => setTimeout(resolve, 1200))
+  try {
+    console.log('📝 Calling FastAPI to generate JD...', draft.jobTitle)
 
-  const levelLabel =
-    draft.experienceLevel === 'intern'
-      ? 'Intern'
-      : draft.experienceLevel === 'fresher'
-      ? 'Fresher / Entry-Level'
-      : 'Experienced Professional'
+    // Map frontend field names to API field names
+    const payload = {
+      experienceLevel: draft.experienceLevel,
+      jobTitle: draft.jobTitle,
+      location: draft.location,
+      workMode: draft.workMode,
+      workHours: draft.workHours,
+      duration: draft.duration,
+      stipend: draft.stipend || null,
+      salary: draft.salary || null,
+      fullTimeOfferSalary: draft.fullTimeOfferSalary || null,
+      experienceYears: draft.experienceYears || null,
+      roleDescription: draft.roleDescription,
+      companyName: 'Stackular'
+    }
 
-  const compensationLine =
-    draft.experienceLevel === 'intern'
-      ? `- Stipend: ₹${draft.stipend} INR\n- Duration: ${draft.duration}`
-      : draft.experienceLevel === 'fresher'
-      ? `- Full-Time Offer Salary: ₹${draft.fullTimeOfferSalary} INR`
-      : `- Salary: ₹${draft.salary} INR`
+    console.log('📤 Sending payload to FastAPI:', payload)
 
-  const roleDescSection = draft.roleDescription
-    ? `\n## Role Overview\n${draft.roleDescription}\n`
-    : ''
+    // Call FastAPI endpoint
+    const response = await fetch('http://localhost:8000/generate-jd', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
 
-  const content = `## Job Title
-${draft.jobTitle}
+    console.log('📬 FastAPI Response status:', response.status)
 
-## Experience Level
-${levelLabel}
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error('❌ FastAPI Error:', errorData)
+      throw new Error(`FastAPI Error: ${errorData.error || 'Unknown error'}`)
+    }
 
-## Location & Work Details
-- Location: ${draft.location}
-- Work Mode: ${draft.workMode}
-- Work Hours: ${draft.workHours}
+    const data = await response.json()
+    console.log('✅ FastAPI Success:', data.message)
+    console.log('📄 Generated JD length:', data.jd?.length)
 
-## Compensation
-${compensationLine}
-${roleDescSection}
-## About the Role
-We are looking for a talented ${levelLabel} to join the Stackular team as a **${draft.jobTitle}**. This is an exciting opportunity to work in a fast-paced, collaborative environment where your contributions directly impact our product and customers.
+    if (!data.jd) {
+      throw new Error('No JD content in response')
+    }
 
-## Key Responsibilities
-- Design, develop, and deliver high-quality work aligned with ${draft.jobTitle} responsibilities.
-- Collaborate with cross-functional teams to define requirements and ship features.
-- Participate in reviews and contribute to best practices within the team.
-- Proactively communicate progress, blockers, and ideas to stakeholders.
-${draft.experienceLevel === 'experienced' ? '- Mentor junior team members and contribute to architectural decisions.\n- Lead initiatives and drive improvements across the engineering organization.' : draft.experienceLevel === 'intern' ? '- Learn and grow under the guidance of experienced team members.\n- Contribute meaningfully to live projects during the internship duration.' : '- Grow rapidly by working alongside experienced professionals.\n- Build foundational knowledge and skills in a structured environment.'}
-
-## What We Offer
-- Competitive compensation package
-- Flexible ${draft.workMode.toLowerCase()} work environment
-- Learning & development opportunities
-- Collaborative and inclusive culture at Stackular
-${draft.experienceLevel === 'experienced' ? '- Leadership growth path and technical ownership opportunities' : draft.experienceLevel === 'intern' ? `- Hands-on experience with a ${draft.duration} internship program\n- Potential full-time opportunity for high performers` : '- Structured onboarding program with dedicated mentorship\n- Clear career growth pathway'}
-
-## How to Apply
-Send your resume and portfolio to our recruitment team at Stackular. Shortlisted candidates will be contacted within 5–7 business days for further assessment rounds.
-
----
-*This job description was created using Stackular ATS.*`.trim()
-
-  return content
+    return data.jd
+  } catch (error) {
+    console.error('❌ Error calling FastAPI:', error)
+    
+    // Fallback: Show error message
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    throw new Error(`Failed to generate JD: ${errorMessage}`)
+  }
 }

@@ -22,6 +22,7 @@ import {
 import { useAuth } from '../../context/useAuth'
 import { useJD } from '../../context/useJD'
 import { generateJD } from '../../services/jdService'
+import { JDDisplay } from '../../components/JDDisplay'
 import { INTERVIEWERS } from '../../constants/users'
 import type { ExperienceLevel, JDDraft, JDStatus } from '../../types'
 
@@ -507,18 +508,7 @@ export default function JobPostingPage() {
               </div>
             </div>
             <div style={{ padding: '24px' }}>
-              <pre
-                style={{
-                  whiteSpace: 'pre-wrap',
-                  fontFamily: 'Sora, sans-serif',
-                  fontSize: '13px',
-                  lineHeight: '1.75',
-                  color: '#e5e7eb',
-                  margin: 0,
-                }}
-              >
-                {generatedContent}
-              </pre>
+              <JDDisplay content={generatedContent} />
             </div>
           </div>
         </div>

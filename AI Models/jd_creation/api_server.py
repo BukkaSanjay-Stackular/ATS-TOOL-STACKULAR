@@ -31,11 +31,15 @@ app.add_middleware(
         "http://localhost:5000",      # .NET Backend (HTTP)
         "http://localhost:5001",      # .NET Backend (HTTPS)
         "https://localhost:5001",     # .NET Backend (HTTPS)
-        "http://localhost:5173",      # Frontend (Vite dev server)
+        "http://localhost:5173",      # Frontend (Vite dev server - primary)
+        "http://localhost:5174",      # Frontend (Vite dev server - fallback)
+        "http://localhost:5175",      # Frontend (Vite dev server - fallback)
         "http://127.0.0.1:5000",
         "http://127.0.0.1:5001",
         "https://127.0.0.1:5001",
         "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
+        "http://127.0.0.1:5175",
     ],
     allow_credentials=True,
     allow_methods=["*"],
