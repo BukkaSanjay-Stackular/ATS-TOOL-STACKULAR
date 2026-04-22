@@ -1,0 +1,6 @@
+requests
+python-dotenv
+weasyprint
+jinja2
+fastapi
+uvicorn

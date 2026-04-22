@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { LayoutDashboard, FilePlus, LogOut } from 'lucide-react'
 import { useAuth } from '../../context/useAuth'
+import GlowOrb from '../GlowOrb'
 import stackularLogo from '../../assets/Stackular_logo.svg'
 
 const NAV_ITEMS = [
@@ -18,11 +19,12 @@ export default function RecruitmentLayout() {
   }
 
   return (
-    <div className="flex h-screen" style={{ background: '#0c0c0c' }}>
+    <div className="flex h-screen" style={{ background: '#0c0c0c', position: 'relative' }}>
+      <GlowOrb />
       {/* Sidebar */}
       <aside
         className="w-60 flex flex-col"
-        style={{ background: '#161719', borderRight: '1px solid #37373f' }}
+        style={{ background: '#161719', borderRight: '1px solid #37373f', position: 'relative', zIndex: 10 }}
       >
         <div className="p-5" style={{ borderBottom: '1px solid #37373f' }}>
           <div className="flex items-center gap-2.5">
@@ -62,8 +64,8 @@ export default function RecruitmentLayout() {
 
         <div className="p-3" style={{ borderTop: '1px solid #37373f' }}>
           <div className="px-3 py-2 mb-1">
+            <p className="text-xs truncate" style={{ color: '#9ca3af' }}>Recruitment Panel</p>
             <p className="text-white text-sm font-medium truncate">{user?.name}</p>
-            <p className="text-xs truncate" style={{ color: '#9ca3af' }}>{user?.username}</p>
           </div>
           <button
             onClick={handleLogout}
@@ -85,7 +87,7 @@ export default function RecruitmentLayout() {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto" style={{ background: '#0c0c0c' }}>
+      <main className="flex-1 overflow-y-auto" style={{ position: 'relative', zIndex: 1 }}>
         <Outlet />
       </main>
     </div>

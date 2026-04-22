@@ -1,15 +1,6 @@
 import { createContext, useState, useEffect } from 'react'
 import type { User, UserRole } from '../types'
-
-const USERS: Array<User> = [
-  { id: 1, username: 'Amulya', password: 'amulya@hr-stack', role: 'recruitment', name: 'Recruitment Team' },
-  { id: 2, username: 'Sai Kalyan', password: 'kalyan@manager-stack', role: 'recruitment', name: 'Recruitment Team' },
-  { id: 3, username: 'Venkat', password: 'venkat@ceo-stack', role: 'recruitment', name: 'Recruitment Team' },
-  { id: 4, username: 'Karthik', password: 'karthik@dev-stack', role: 'interviewer', name: 'Interview Panel' },
-  { id: 5, username: 'Fardeen', password: 'fardeen@dev-stack', role: 'interviewer', name: 'Interview Panel' },
-  { id: 6, username: 'Jay', password: 'jay@engineer-stack', role: 'interviewer', name: 'Interview Panel' },
-  { id: 7, username: 'Nadem', password: 'nadeem@engineer-stack', role: 'interviewer', name: 'Interview Panel' },
-]
+import { USERS } from '../constants/users'
 
 interface AuthContextValue {
   user: User | null
