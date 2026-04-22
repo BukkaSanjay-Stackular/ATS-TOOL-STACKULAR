@@ -11,8 +11,8 @@ from typing import Dict, Any
 from jinja2 import Template
 from weasyprint import HTML
 
-# Load environment variables
-load_dotenv()
+# Load environment variables - override=True used to favor .env file over system variables
+load_dotenv(override=True)
 
 class JDGenerator:
     def __init__(self):
@@ -57,7 +57,9 @@ class JDGenerator:
         # Create the system prompt
         system_prompt = template
         
-        # Create the user prompt with the input data
+        stipend_salary = str(hr_input.get('stipend_salary'))
+        fulltime_salary = str(hr_input.get('fulltime_offer_salary'))
+        
         user_prompt = f"""Generate a professional Job Description based on this information:
 
 Basic Info:
@@ -67,8 +69,8 @@ Basic Info:
 - Duration: {hr_input.get('duration')}
 - Work Mode: {hr_input.get('work_mode')}
 - Work Hours: {hr_input.get('work_hours')}
-- Salary/Stipend: ₹{hr_input.get('stipend_salary')} INR/Month
-{f"- Full-Time Offer: ₹{hr_input.get('fulltime_offer_salary')} INR/Month" if hr_input.get('fulltime_offer_salary') else ""}
+- Salary/Stipend: {stipend_salary} INR/Month
+{f"- Full-Time Offer: {fulltime_salary} INR/Month" if hr_input.get('fulltime_offer_salary') else ""}
 
 Role Description (analyze this to extract responsibilities, skills, etc.):
 {hr_input.get('role_info')}
@@ -82,6 +84,8 @@ Generate the complete JD following the format specifications. Output only the fo
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
+            "HTTP-Referer": "https://stackular.in", # Optional, for OpenRouter rankings
+            "X-Title": "Stackular JD Generator", # Optional, for OpenRouter rankings
         }
         
         # Prepare request payload
@@ -496,7 +500,7 @@ def main():
     try:
         # Initialize generator
         generator = JDGenerator()
-        print("✓ JD Generator initialized successfully")
+        print("[OK] JD Generator initialized successfully")
         print(f"Using model: {generator.model}")
         print("-" * 60)
         
@@ -507,11 +511,14 @@ def main():
         # Save to file
         generator.save_jd(jd, "sample_generated_jd.txt")
         
-        # Print to console
+        # Print to console (safely)
         print("\n" + "=" * 60)
         print("GENERATED JD:")
         print("=" * 60)
-        print(jd)
+        try:
+            print(jd)
+        except UnicodeEncodeError:
+            print(jd.encode('ascii', errors='replace').decode('ascii'))
         print("=" * 60)
         
     except Exception as e:

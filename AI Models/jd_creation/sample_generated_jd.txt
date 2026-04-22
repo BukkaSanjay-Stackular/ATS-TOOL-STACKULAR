@@ -1,0 +1,35 @@
+Role: AI/ML Intern – Agentic AI (Autonomous Agents)  
+Internship Duration: 6 Months  
+Location: Raidurg Main Road, Hyderabad  
+Work mode: On-site  
+Work Hours: 11:00 AM to 8:00 PM  
+Stipend: 35000 INR/Month  
+Full-Time Offer: Based on your performance, we will review your internship and extend a full-time offer. The starting salary for the full-time role will be ₹50000 INR/Month.  
+
+About us: At Stackular, we are more than just a team – we are a product development community driven by a shared vision. Our values shape who we are, what we do, and how we interact with our peers and our customers. We're not just seeking any regular engineer; we want individuals who identify with our core values and are passionate about software development.  
+
+Role Overview  
+Join Stackular’s AI/ML team to design, prototype, and evaluate autonomous agents that can plan, decide, and act with minimal human intervention. You will collaborate with senior researchers to push the boundaries of agentic AI, contributing to real‑world applications that reshape how software interacts with users.  
+
+What You'll Work On  
+• Develop and experiment with large language models to build autonomous decision‑making agents  
+• Implement reinforcement learning and planning algorithms for agent behavior optimization  
+• Create pipelines for data collection, model training, and evaluation of agent performance  
+• Integrate agentic frameworks with existing Stackular products and APIs  
+• Document experiments, results, and best practices for knowledge sharing across the team  • Participate in code reviews and collaborative problem‑solving sessions  
+• Contribute to research papers or internal whitepapers on autonomous agent technologies  
+
+What You Need  
+• Currently pursuing a Bachelor’s or Master’s degree in Computer Science, AI, or a related field  
+• Strong programming skills in Python and familiarity with machine‑learning libraries such as PyTorch or TensorFlow  
+• Understanding of natural language processing fundamentals and experience with transformer‑based models  
+• Ability to work effectively in a collaborative, fast‑paced environment  
+• Eagerness to learn and apply cutting‑edge AI concepts to real‑world problems  
+
+Great to Have  
+• Hands‑on experience with reinforcement learning or multi‑agent simulations  
+• Exposure to deployment tools such as Docker, Kubernetes, or cloud ML services  
+• Prior projects involving autonomous systems, robotics, or AI‑driven automation  
+• Knowledge of prompt engineering and LLM fine‑tuning techniques  
+
+Who Can Apply?  Students enrolled in undergraduate or graduate programs in Computer Science, Electrical Engineering, or related disciplines are encouraged to apply. Ideal candidates demonstrate a solid foundation in AI/ML concepts, strong analytical abilities, and a passion for building intelligent, self‑directed systems. Join Stackular to gain hands‑on experience shaping the future of autonomous AI.
