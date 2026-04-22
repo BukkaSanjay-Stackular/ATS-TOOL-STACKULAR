@@ -1,13 +1,18 @@
 .gitnexus
 .claude/skills/
+
+# .NET
+bin/
+obj/
+.vs/
+appsettings.Development.json
+
+# Python / General
 .venv
 .env
-__pycache__/    
+__pycache__/
 *.pyc
 .idea/
 .DS_Store
 *.log
 venv
-.venv
-.env
-__pycache__/

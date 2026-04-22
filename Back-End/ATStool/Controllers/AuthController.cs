@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ATStool.Models;
 using ATStool.DTOs;
 using ATStool.Services;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 namespace ATStool.Controllers
 {
@@ -23,15 +24,15 @@ namespace ATStool.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto dto)
         {
-            var validTypes = new[] { "Interviewee", "Recruiter", "Admin" };
+            var validTypes = new[] { "Interviewer", "Recruiter", "Admin" };
             if (!validTypes.Contains(dto.UserType))
-                return BadRequest("UserType must be Interviewee, Recruiter, or Admin.");
+                return BadRequest("UserType must be Interviewer, Recruiter, or Admin.");
 
             var user = new User
             {
                 FullName = dto.FullName,
                 Email = dto.Email,
-                UserName = dto.Email,
+                UserName = dto.UserName,
                 UserType = dto.UserType   // ← UserType instead of Role
             };
 
@@ -41,26 +42,38 @@ namespace ATStool.Controllers
 
             await _userManager.AddToRoleAsync(user, dto.UserType);  // ← UserType used as role
 
-            return Ok(new { message = $"{dto.UserType} registered successfully." });
+            return Ok(ApiResponse<object>.Ok("User successfully Created",user));
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto)
         {
-            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                return BadRequest(ApiResponse<string>.Fail("Validation failed.", errors));
+            }
+
+            var user = await _userManager.FindByNameAsync(dto.UserName);
             if (user == null)
-                return Unauthorized("Invalid email or password.");
+                return Unauthorized(ApiResponse<string>.Fail("Invalid email or password"));
 
             var isPasswordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
             if (!isPasswordValid)
-                return Unauthorized("Invalid email or password.");
+                return Unauthorized(ApiResponse<string>.Fail("Invalid email or password."));
 
             var roles = await _userManager.GetRolesAsync(user);
-            var userType = roles.FirstOrDefault() ?? "Interviewee";
+            var userType = roles.FirstOrDefault() ?? "Interviewer";
 
             var token = _tokenService.GenerateToken(user, userType);
 
-            return Ok(new { token, userType, name = user.FullName, email = user.Email });
+            var data = new { token, userType, name = user.FullName, email = user.Email };
+
+            return Ok(ApiResponse<object>.Ok("Login successfull",data));
         }
     }
 }
