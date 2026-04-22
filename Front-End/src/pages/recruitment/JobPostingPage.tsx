@@ -55,31 +55,29 @@ const selectStyle: React.CSSProperties = {
 }
 
 interface FormState {
-  experienceLevel: ExperienceLevel | null
-  jobTitle: string
+  experience_level: ExperienceLevel | null
+  job_title: string
   location: string
-  workMode: string
-  workHours: string
+  work_mode: string
+  work_hours: string
   duration: string
-  stipend: string
-  salary: string
-  fullTimeOfferSalary: string
-  experienceYears: string
+  stipend_salary: string
+  fulltime_offer_salary: string
+  years_of_experience: string
   roleDescription: string
   assignedTo: string[]
 }
 
 const emptyForm: FormState = {
-  experienceLevel: null,
-  jobTitle: '',
+  experience_level: null,
+  job_title: '',
   location: '',
-  workMode: '',
-  workHours: '',
+  work_mode: '',
+  work_hours: '',
   duration: '',
-  stipend: '',
-  salary: '',
-  fullTimeOfferSalary: '',
-  experienceYears: '',
+  stipend_salary: '',
+  fulltime_offer_salary: '',
+  years_of_experience: '',
   roleDescription: '',
   assignedTo: [],
 }
@@ -185,7 +183,7 @@ export default function JobPostingPage() {
   }
 
   function handleSelectLevel(level: ExperienceLevel) {
-    setForm({ ...emptyForm, experienceLevel: level })
+    setForm({ ...emptyForm, experience_level: level })
     setEditingId(null)
     setShowGenerated(false)
     setGeneratedContent('')
@@ -193,27 +191,25 @@ export default function JobPostingPage() {
   }
 
   function isFormComplete(): boolean {
-    if (!form.experienceLevel || !form.jobTitle || !form.location || !form.workMode || !form.workHours) return false
+    if (!form.experience_level || !form.job_title || !form.location || !form.work_mode || !form.work_hours) return false
     if (!form.roleDescription) return false
-    if (form.experienceLevel === 'intern' && (!form.duration || !form.stipend)) return false
-    if (form.experienceLevel === 'experienced' && (!form.salary || !form.experienceYears)) return false
-    if (form.experienceLevel === 'fresher' && !form.fullTimeOfferSalary) return false
+    if (form.experience_level === 'intern' && !form.duration) return false
+    if (form.experience_level === 'experienced' && !form.years_of_experience) return false
     return true
   }
 
   function handleSaveDraft() {
-    if (!user || !form.experienceLevel) return
+    if (!user || !form.experience_level) return
     const data = {
-      experienceLevel: form.experienceLevel,
-      jobTitle: form.jobTitle,
+      experience_level: form.experience_level,
+      job_title: form.job_title,
       location: form.location,
-      workMode: form.workMode,
-      workHours: form.workHours,
+      work_mode: form.work_mode,
+      work_hours: form.work_hours,
       duration: form.duration,
-      stipend: form.stipend,
-      salary: form.salary,
-      fullTimeOfferSalary: form.fullTimeOfferSalary,
-      experienceYears: form.experienceYears,
+      stipend_salary: form.stipend_salary,
+      fulltime_offer_salary: form.fulltime_offer_salary,
+      years_of_experience: form.years_of_experience,
       roleDescription: form.roleDescription,
       assignedTo: form.assignedTo,
       createdBy: user.username,
@@ -230,18 +226,17 @@ export default function JobPostingPage() {
   }
 
   function handleAssign() {
-    if (!user || !form.experienceLevel || form.assignedTo.length === 0) return
+    if (!user || !form.experience_level || form.assignedTo.length === 0) return
     const data = {
-      experienceLevel: form.experienceLevel,
-      jobTitle: form.jobTitle,
+      experience_level: form.experience_level,
+      job_title: form.job_title,
       location: form.location,
-      workMode: form.workMode,
-      workHours: form.workHours,
+      work_mode: form.work_mode,
+      work_hours: form.work_hours,
       duration: form.duration,
-      stipend: form.stipend,
-      salary: form.salary,
-      fullTimeOfferSalary: form.fullTimeOfferSalary,
-      experienceYears: form.experienceYears,
+      stipend_salary: form.stipend_salary,
+      fulltime_offer_salary: form.fulltime_offer_salary,
+      years_of_experience: form.years_of_experience,
       roleDescription: form.roleDescription,
       assignedTo: form.assignedTo,
       createdBy: user.username,
@@ -264,18 +259,17 @@ export default function JobPostingPage() {
     let targetDraft: JDDraft | undefined
     if (draftId) {
       targetDraft = myDrafts.find((d) => d.id === draftId)
-    } else if (isFormComplete() && form.experienceLevel) {
+    } else if (isFormComplete() && form.experience_level) {
       const data = {
-        experienceLevel: form.experienceLevel,
-        jobTitle: form.jobTitle,
+        experience_level: form.experience_level,
+        job_title: form.job_title,
         location: form.location,
-        workMode: form.workMode,
-        workHours: form.workHours,
+        work_mode: form.work_mode,
+        work_hours: form.work_hours,
         duration: form.duration,
-        stipend: form.stipend,
-        salary: form.salary,
-        fullTimeOfferSalary: form.fullTimeOfferSalary,
-        experienceYears: form.experienceYears,
+        stipend_salary: form.stipend_salary,
+        fulltime_offer_salary: form.fulltime_offer_salary,
+        years_of_experience: form.years_of_experience,
         roleDescription: form.roleDescription,
         assignedTo: form.assignedTo,
         createdBy: user.username,
@@ -306,16 +300,15 @@ export default function JobPostingPage() {
 
   function handleEditReturned(draft: JDDraft) {
     setForm({
-      experienceLevel: draft.experienceLevel,
-      jobTitle: draft.jobTitle,
+      experience_level: draft.experience_level,
+      job_title: draft.job_title,
       location: draft.location,
-      workMode: draft.workMode,
-      workHours: draft.workHours,
+      work_mode: draft.work_mode,
+      work_hours: draft.work_hours,
       duration: draft.duration,
-      stipend: draft.stipend,
-      salary: draft.salary,
-      fullTimeOfferSalary: draft.fullTimeOfferSalary,
-      experienceYears: draft.experienceYears,
+      stipend_salary: draft.stipend_salary,
+      fulltime_offer_salary: draft.fulltime_offer_salary,
+      years_of_experience: draft.years_of_experience,
       roleDescription: draft.roleDescription,
       assignedTo: draft.assignedTo,
     })
@@ -347,10 +340,10 @@ export default function JobPostingPage() {
     setTimeout(() => setCopiedJD(false), 2000)
   }
 
-  const hasForm = form.experienceLevel !== null
+  const hasForm = form.experience_level !== null
 
   const levelMeta = {
-    intern: { label: 'Intern', desc: 'Short-term internship with stipend', Icon: GraduationCap },
+    intern: { label: 'Intern', desc: 'Short-term internship with stipend_salary', Icon: GraduationCap },
     fresher: { label: 'Fresher', desc: 'Entry-level, no prior experience required', Icon: UserPlus },
     experienced: { label: 'Experienced', desc: 'Candidates with specific years of experience', Icon: Award },
   }
@@ -545,7 +538,7 @@ export default function JobPostingPage() {
                 level: 'intern' as ExperienceLevel,
                 Icon: GraduationCap,
                 label: 'Intern',
-                desc: 'Short-term with stipend',
+                desc: 'Short-term with stipend_salary',
                 gradient: 'linear-gradient(135deg, rgba(29,43,164,0.12) 0%, rgba(110,168,254,0.06) 100%)',
                 activeGradient: 'linear-gradient(135deg, rgba(29,43,164,0.22) 0%, rgba(110,168,254,0.10) 100%)',
               },
@@ -567,7 +560,7 @@ export default function JobPostingPage() {
               },
             ] as const
           ).map(({ level, Icon, label, desc, gradient, activeGradient }) => {
-            const isActive = form.experienceLevel === level
+            const isActive = form.experience_level === level
             return (
               <button
                 key={level}
@@ -667,8 +660,8 @@ export default function JobPostingPage() {
                 <FieldLabel required>Job Title</FieldLabel>
                 <input
                   type="text"
-                  value={form.jobTitle}
-                  onChange={(e) => setField('jobTitle', e.target.value)}
+                  value={form.job_title}
+                  onChange={(e) => setField('job_title', e.target.value)}
                   placeholder="e.g. Frontend Developer, Data Analyst"
                   style={inputStyle}
                   onFocus={(e) => (e.currentTarget.style.borderColor = '#1d2ba4')}
@@ -677,7 +670,7 @@ export default function JobPostingPage() {
               </div>
 
               {/* Intern-specific: Duration (full width, prominent) */}
-              {form.experienceLevel === 'intern' && (
+              {form.experience_level === 'intern' && (
                 <div style={{ marginBottom: '20px' }}>
                   <FieldLabel required>Duration</FieldLabel>
                   <input
@@ -728,8 +721,8 @@ export default function JobPostingPage() {
                     </span>
                   </FieldLabel>
                   <select
-                    value={form.workMode}
-                    onChange={(e) => setField('workMode', e.target.value)}
+                    value={form.work_mode}
+                    onChange={(e) => setField('work_mode', e.target.value)}
                     style={selectStyle}
                     onFocus={(e) => (e.currentTarget.style.borderColor = '#1d2ba4')}
                     onBlur={(e) => (e.currentTarget.style.borderColor = '#37373f')}
@@ -747,8 +740,8 @@ export default function JobPostingPage() {
                     </span>
                   </FieldLabel>
                   <select
-                    value={form.workHours}
-                    onChange={(e) => setField('workHours', e.target.value)}
+                    value={form.work_hours}
+                    onChange={(e) => setField('work_hours', e.target.value)}
                     style={selectStyle}
                     onFocus={(e) => (e.currentTarget.style.borderColor = '#1d2ba4')}
                     onBlur={(e) => (e.currentTarget.style.borderColor = '#37373f')}
@@ -760,7 +753,7 @@ export default function JobPostingPage() {
               </div>
 
               {/* Compensation section — level-specific, 2-col where applicable */}
-              {form.experienceLevel === 'intern' && (
+              {form.experience_level === 'intern' && (
                 <>
                   <div
                     style={{
@@ -774,8 +767,8 @@ export default function JobPostingPage() {
                     <FieldLabel>Stipend / Salary INR</FieldLabel>
                     <input
                       type="text"
-                      value={form.stipend}
-                      onChange={(e) => setField('stipend', e.target.value)}
+                      value={form.stipend_salary}
+                      onChange={(e) => setField('stipend_salary', e.target.value)}
                       placeholder="e.g. 50000"
                       style={inputStyle}
                       onFocus={(e) => (e.currentTarget.style.borderColor = '#1d2ba4')}
@@ -785,7 +778,7 @@ export default function JobPostingPage() {
                 </>
               )}
 
-              {form.experienceLevel === 'experienced' && (
+              {form.experience_level === 'experienced' && (
                 <>
                   <div style={{ height: '1px', background: '#37373f', margin: '24px 0' }} />
                   <SectionLabel icon={DollarSign} text="Compensation & Experience" />
@@ -801,8 +794,8 @@ export default function JobPostingPage() {
                       <FieldLabel>Salary INR</FieldLabel>
                       <input
                         type="text"
-                        value={form.salary}
-                        onChange={(e) => setField('salary', e.target.value)}
+                        value={form.fulltime_offer_salary}
+                        onChange={(e) => setField('fulltime_offer_salary', e.target.value)}
                         placeholder="e.g. 1200000"
                         style={inputStyle}
                         onFocus={(e) => (e.currentTarget.style.borderColor = '#1d2ba4')}
@@ -813,8 +806,8 @@ export default function JobPostingPage() {
                       <FieldLabel required>Experience Years</FieldLabel>
                       <input
                         type="text"
-                        value={form.experienceYears}
-                        onChange={(e) => setField('experienceYears', e.target.value)}
+                        value={form.years_of_experience}
+                        onChange={(e) => setField('years_of_experience', e.target.value)}
                         placeholder="e.g. 3+ years, 5–8 years"
                         style={inputStyle}
                         onFocus={(e) => (e.currentTarget.style.borderColor = '#1d2ba4')}
@@ -825,7 +818,7 @@ export default function JobPostingPage() {
                 </>
               )}
 
-              {form.experienceLevel === 'fresher' && (
+              {form.experience_level === 'fresher' && (
                 <>
                   <div style={{ height: '1px', background: '#37373f', margin: '24px 0' }} />
                   <SectionLabel icon={DollarSign} text="Compensation" />
@@ -833,8 +826,8 @@ export default function JobPostingPage() {
                     <FieldLabel>Full-Time Offer Salary INR</FieldLabel>
                     <input
                       type="text"
-                      value={form.fullTimeOfferSalary}
-                      onChange={(e) => setField('fullTimeOfferSalary', e.target.value)}
+                      value={form.fulltime_offer_salary}
+                      onChange={(e) => setField('fulltime_offer_salary', e.target.value)}
                       placeholder="e.g. 600000"
                       style={inputStyle}
                       onFocus={(e) => (e.currentTarget.style.borderColor = '#1d2ba4')}
@@ -1070,7 +1063,7 @@ export default function JobPostingPage() {
                 </button>
                 <button
                   onClick={handleAssign}
-                  disabled={form.assignedTo.length === 0 || !form.experienceLevel || !form.jobTitle}
+                  disabled={form.assignedTo.length === 0 || !form.experience_level || !form.job_title}
                   title={form.assignedTo.length === 0 ? 'Select at least one interviewer to assign' : ''}
                   style={{
                     display: 'flex',
@@ -1080,18 +1073,18 @@ export default function JobPostingPage() {
                     borderRadius: '9px',
                     fontSize: '14px',
                     fontWeight: 600,
-                    color: form.assignedTo.length > 0 && form.jobTitle ? '#ffffff' : '#6b7280',
-                    background: form.assignedTo.length > 0 && form.jobTitle ? 'rgba(29,43,164,0.15)' : 'transparent',
-                    border: `1px solid ${form.assignedTo.length > 0 && form.jobTitle ? 'rgba(29,43,164,0.5)' : '#37373f'}`,
-                    cursor: form.assignedTo.length > 0 && form.jobTitle ? 'pointer' : 'not-allowed',
+                    color: form.assignedTo.length > 0 && form.job_title ? '#ffffff' : '#6b7280',
+                    background: form.assignedTo.length > 0 && form.job_title ? 'rgba(29,43,164,0.15)' : 'transparent',
+                    border: `1px solid ${form.assignedTo.length > 0 && form.job_title ? 'rgba(29,43,164,0.5)' : '#37373f'}`,
+                    cursor: form.assignedTo.length > 0 && form.job_title ? 'pointer' : 'not-allowed',
                     fontFamily: 'Sora, sans-serif',
-                    opacity: form.assignedTo.length > 0 && form.jobTitle ? 1 : 0.5,
+                    opacity: form.assignedTo.length > 0 && form.job_title ? 1 : 0.5,
                   }}
                   onMouseEnter={(e) => {
-                    if (form.assignedTo.length > 0 && form.jobTitle) e.currentTarget.style.background = 'rgba(29,43,164,0.25)'
+                    if (form.assignedTo.length > 0 && form.job_title) e.currentTarget.style.background = 'rgba(29,43,164,0.25)'
                   }}
                   onMouseLeave={(e) => {
-                    if (form.assignedTo.length > 0 && form.jobTitle) e.currentTarget.style.background = 'rgba(29,43,164,0.15)'
+                    if (form.assignedTo.length > 0 && form.job_title) e.currentTarget.style.background = 'rgba(29,43,164,0.15)'
                   }}
                 >
                   <UserCheck style={{ width: '14px', height: '14px' }} />
@@ -1187,28 +1180,28 @@ export default function JobPostingPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   {(
                     [
-                      { label: 'Job Title', value: form.jobTitle },
+                      { label: 'Job Title', value: form.job_title },
                       {
                         label: 'Experience Level',
-                        value: form.experienceLevel
-                          ? form.experienceLevel.charAt(0).toUpperCase() + form.experienceLevel.slice(1)
+                        value: form.experience_level
+                          ? form.experience_level.charAt(0).toUpperCase() + form.experience_level.slice(1)
                           : '',
                       },
                       { label: 'Location', value: form.location },
-                      { label: 'Work Mode', value: form.workMode },
-                      { label: 'Work Hours', value: form.workHours },
-                      ...(form.experienceLevel === 'intern'
+                      { label: 'Work Mode', value: form.work_mode },
+                      { label: 'Work Hours', value: form.work_hours },
+                      ...(form.experience_level === 'intern'
                         ? [
                             { label: 'Duration', value: form.duration },
-                            { label: 'Stipend', value: form.stipend ? `₹${form.stipend}` : '' },
+                            { label: 'Stipend', value: form.stipend_salary ? `₹${form.stipend_salary}` : '' },
                           ]
-                        : form.experienceLevel === 'experienced'
+                        : form.experience_level === 'experienced'
                         ? [
-                            { label: 'Salary', value: form.salary ? `₹${form.salary}` : '' },
-                            { label: 'Experience Years', value: form.experienceYears },
+                            { label: 'Salary', value: form.fulltime_offer_salary ? `₹${form.fulltime_offer_salary}` : '' },
+                            { label: 'Experience Years', value: form.years_of_experience },
                           ]
-                        : form.experienceLevel === 'fresher'
-                        ? [{ label: 'Full-Time Salary', value: form.fullTimeOfferSalary ? `₹${form.fullTimeOfferSalary}` : '' }]
+                        : form.experience_level === 'fresher'
+                        ? [{ label: 'Full-Time Salary', value: form.fulltime_offer_salary ? `₹${form.fulltime_offer_salary}` : '' }]
                         : []),
                       {
                         label: 'Role Description',
@@ -1289,16 +1282,16 @@ export default function JobPostingPage() {
                         borderRadius: '999px',
                         width: (() => {
                           const fields = [
-                            form.jobTitle,
+                            form.job_title,
                             form.location,
-                            form.workMode,
-                            form.workHours,
+                            form.work_mode,
+                            form.work_hours,
                             form.roleDescription,
-                            form.experienceLevel === 'intern' ? form.duration : null,
-                            form.experienceLevel === 'intern' ? form.stipend : null,
-                            form.experienceLevel === 'experienced' ? form.salary : null,
-                            form.experienceLevel === 'experienced' ? form.experienceYears : null,
-                            form.experienceLevel === 'fresher' ? form.fullTimeOfferSalary : null,
+                            form.experience_level === 'intern' ? form.duration : null,
+                            form.experience_level === 'intern' ? form.stipend_salary : null,
+                            form.experience_level === 'experienced' ? form.fulltime_offer_salary : null,
+                            form.experience_level === 'experienced' ? form.years_of_experience : null,
+                            form.experience_level === 'fresher' ? form.fulltime_offer_salary : null,
                           ].filter((f) => f !== null)
                           const filled = fields.filter(Boolean).length
                           return `${Math.round((filled / fields.length) * 100)}%`
@@ -1344,7 +1337,7 @@ export default function JobPostingPage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {returnedDrafts.map((draft) => {
-              const meta = draft.experienceLevel ? levelMeta[draft.experienceLevel] : null
+              const meta = draft.experience_level ? levelMeta[draft.experience_level] : null
               return (
                 <div
                   key={draft.id}
@@ -1380,7 +1373,7 @@ export default function JobPostingPage() {
                         </div>
                       )}
                       <p style={{ fontWeight: 700, color: '#ffffff', fontSize: '15px', margin: 0 }}>
-                        {draft.jobTitle}
+                        {draft.job_title}
                       </p>
                       <span
                         style={{
@@ -1392,7 +1385,7 @@ export default function JobPostingPage() {
                           fontWeight: 600,
                         }}
                       >
-                        {draft.experienceLevel}
+                        {draft.experience_level}
                       </span>
                     </div>
                     <p style={{ color: '#6b7280', fontSize: '12px', margin: '0 0 8px 0' }}>
@@ -1546,7 +1539,7 @@ export default function JobPostingPage() {
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {draft.jobTitle || 'Untitled'}
+                      {draft.job_title || 'Untitled'}
                     </p>
                     <span
                       style={{
@@ -1560,7 +1553,7 @@ export default function JobPostingPage() {
                         flexShrink: 0,
                       }}
                     >
-                      {draft.experienceLevel}
+                      {draft.experience_level}
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>

@@ -1,0 +1,25 @@
+{
+  "enabledMcpjsonServers": ["symdex"],
+  "permissions": {
+    "allow": [
+      "Bash(npm install*)",
+      "Bash(npm run *)",
+      "Bash(npx tsc*)",
+      "Bash(npx *)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(mkdir*)",
+      "Bash(rm *)",
+      "Bash(grep*)",
+      "Bash(ls*)",
+      "Bash(cd *)",
+      "Write(Front-End/src/**)",
+      "Edit(Front-End/src/**)",
+      "Write(Front-End/package.json)",
+      "Write(Front-End/package-lock.json)"
+    ]
+  }
+}

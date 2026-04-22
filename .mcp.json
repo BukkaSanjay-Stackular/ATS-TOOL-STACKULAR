@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "symdex": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["symdex", "serve"]
+    }
+  }
+}
