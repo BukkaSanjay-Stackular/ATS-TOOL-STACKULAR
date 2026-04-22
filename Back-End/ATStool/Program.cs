@@ -9,12 +9,18 @@ using ATStool.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+//builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(opts =>
+    {
+        opts.SuppressModelStateInvalidFilter = true;  // ← disables automatic validation
+    });
 
 builder.Services.AddDbContext<AppDbContext>(opts =>
     opts.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<User, IdentityRole>()
+builder.Services.AddIdentityCore<User>()
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
@@ -54,14 +60,15 @@ static async Task SeedData(WebApplication app)
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 
-    foreach (var role in new[] { "Admin", "Recruiter", "Interviewee" })
+    foreach (var role in new[] { "Admin", "Recruiter", "Interviewer" })
         if (!await roleManager.RoleExistsAsync(role))
             await roleManager.CreateAsync(new IdentityRole(role));
 
     if (await userManager.FindByEmailAsync("amulya@hr-stackular.com") == null)
     {
-        var admin = new User { FullName = "Amulya Athimalla", Email = "amulya@hr-stackular.com", UserName = "Amulya", UserType = "Admin" };
+        var admin = new User { FullName = "Amulya Arthimalla", Email = "amulya@hr-stackular.com", UserName = "Amulya", UserType = "Admin" };
         await userManager.CreateAsync(admin, "Admin@123!");
         await userManager.AddToRoleAsync(admin, "Admin");
     }
 }
+ 

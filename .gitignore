@@ -1,2 +1,6 @@
 .gitnexus
 .claude/skills/
+bin/
+obj/
+.vs/
+appsettings.Development.json
