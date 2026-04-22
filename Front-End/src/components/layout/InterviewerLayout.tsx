@@ -5,11 +5,11 @@ import GlowOrb from '../GlowOrb'
 import stackularLogo from '../../assets/Stackular_logo.svg'
 
 const NAV_ITEMS = [
-  { to: '/recruitment/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/recruitment/job-posting', icon: FilePlus, label: 'Job Posting' },
+  { to: '/interviewer/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/interviewer/job-posting', icon: FilePlus, label: 'Job Posting' },
 ]
 
-export default function RecruitmentLayout() {
+export default function InterviewerLayout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -39,7 +39,7 @@ export default function RecruitmentLayout() {
               <p className="text-white font-semibold text-sm" style={{ fontFamily: 'Sora, sans-serif' }}>
                 Stackular ATS
               </p>
-              <p className="text-xs" style={{ color: '#9ca3af' }}>Recruitment Panel</p>
+              <p className="text-xs" style={{ color: '#9ca3af' }}>Interviewer Panel</p>
             </div>
           </div>
         </div>
@@ -64,7 +64,7 @@ export default function RecruitmentLayout() {
 
         <div className="p-3" style={{ borderTop: '1px solid #37373f' }}>
           <div className="px-3 py-2 mb-1">
-            <p className="text-xs truncate" style={{ color: '#9ca3af' }}>Recruitment Panel</p>
+            <p className="text-xs truncate" style={{ color: '#9ca3af' }}>Interviewer Panel</p>
             <p className="text-white text-sm font-medium truncate">{user?.name}</p>
           </div>
           <button

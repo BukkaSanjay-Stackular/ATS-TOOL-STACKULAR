@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Briefcase, UserCheck, Eye, EyeOff, LogIn } from 'lucide-react'
 import { useAuth } from '../context/useAuth'
@@ -18,6 +18,18 @@ export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const logoRef = useRef<HTMLImageElement>(null)
+  const orbRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function onMouseMove(e: MouseEvent) {
+      if (orbRef.current) {
+        orbRef.current.style.left = `${e.clientX - 260}px`
+        orbRef.current.style.top = `${e.clientY - 260}px`
+      }
+    }
+    document.addEventListener('mousemove', onMouseMove)
+    return () => document.removeEventListener('mousemove', onMouseMove)
+  }, [])
 
   const [role, setRole] = useState<UserRole | null>(null)
   const [username, setUsername] = useState('')
@@ -51,7 +63,7 @@ export default function LoginPage() {
     const dest = role === 'recruitment' ? '/recruitment/job-posting' : '/interviewer/dashboard'
     const rect = logoRef.current!.getBoundingClientRect()
 
-    setCapturedUser(username)
+    setCapturedUser(username.toUpperCase())
 
     // Mount flying logo exactly over the original logo — no transition yet
     setFlyStyle({
@@ -123,6 +135,26 @@ export default function LoginPage() {
         if (role && !isAnimating) { setRole(null); setError(''); setUsername(''); setPassword('') }
       }}
     >
+      {/* Cursor-tracking glow orb */}
+      <div
+        ref={orbRef}
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          left: '50vw',
+          top: '50vh',
+          width: '520px',
+          height: '520px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(29,43,164,0.45) 0%, rgba(29,43,164,0.12) 50%, transparent 70%)',
+          filter: 'blur(56px)',
+          pointerEvents: 'none',
+          zIndex: 0,
+          transition: 'left 0.18s ease-out, top 0.18s ease-out',
+        }}
+      />
+
+
       {/* Flying logo — cloned from header, animated independently */}
       {isAnimating && (
         <img
@@ -175,7 +207,7 @@ export default function LoginPage() {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Logo / Brand */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-5">
           <div className="inline-flex items-center justify-center gap-2.5 mb-3">
             <div className="w-9 h-9 flex items-center justify-center shrink-0">
               <img
@@ -201,7 +233,7 @@ export default function LoginPage() {
           style={{ background: '#161719', border: '1px solid #37373f' }}
         >
           <h2
-            className="text-xl font-semibold text-white mb-2"
+            className="text-xl font-semibold text-white mb-1"
             style={{ fontFamily: 'Sora, sans-serif' }}
           >
             {role ? 'Sign in to your panel' : 'Choose your panel'}
