@@ -12,7 +12,7 @@ from jinja2 import Template
 from weasyprint import HTML
 
 # Load environment variables
-load_dotenv()
+load_dotenv(override=True)
 
 class JDGenerator:
     def __init__(self):
@@ -151,6 +151,8 @@ Generate a polished, professional Job Description using this exact template stru
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
+            "HTTP-Referer": "https://stackular.in",  # Optional: for OpenRouter analytics
+            "X-Title": "Stackular JD Generator",    # Optional: for OpenRouter analytics
         }
         
         # Prepare request payload
@@ -183,7 +185,7 @@ Generate a polished, professional Job Description using this exact template stru
                 if jd and jd.strip():
                     return jd.strip()
                 else:
-                    print("⚠️  LLM returned empty content")
+                    print("Warning: LLM returned empty content")
                     print("Attempting fallback model...")
                     return self._retry_with_fallback(system_prompt, user_prompt, headers)
             else:
@@ -192,14 +194,14 @@ Generate a polished, professional Job Description using this exact template stru
                 return self._retry_with_fallback(system_prompt, user_prompt, headers)
         
         except requests.exceptions.RequestException as e:
-            print(f"❌ API Error: {e}")
+            print(f"API Error: {e}")
             print("Attempting fallback model...")
             fallback_result = self._retry_with_fallback(system_prompt, user_prompt, headers)
             if not fallback_result:
                 raise Exception(f"Both primary and fallback models failed. Original error: {e}")
             return fallback_result
         except Exception as e:
-            print(f"❌ Unexpected error: {e}")
+            print(f"Unexpected error: {e}")
             print("Attempting fallback model...")
             fallback_result = self._retry_with_fallback(system_prompt, user_prompt, headers)
             if not fallback_result:
@@ -227,16 +229,16 @@ Generate a polished, professional Job Description using this exact template stru
             if "choices" in result and len(result["choices"]) > 0:
                 content = result["choices"][0]["message"]["content"]
                 if content and content.strip():
-                    print("✅ Fallback model succeeded")
+                    print("Fallback model succeeded")
                     return content.strip()
                 else:
-                    print("❌ Fallback model returned empty content")
+                    print("Fallback model returned empty content")
                     return None
             else:
-                print(f"❌ Unexpected fallback response format: {result}")
+                print(f"Unexpected fallback response format: {result}")
                 return None
         except Exception as e:
-            print(f"❌ Fallback also failed: {e}")
+            print(f"Fallback also failed: {e}")
             return None
     
     def save_jd(self, jd_content: str, output_file: str = "generated_jd.txt") -> None:
@@ -412,91 +414,85 @@ Generate a polished, professional Job Description using this exact template stru
     <style>
         @page {
             size: A4;
-            margin: 50px 75px;
+            margin: 1in;
         }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
+            font-family: 'Aptos', 'Calibri', 'Segoe UI', Arial, sans-serif;
+            line-height: 1.2;
+            color: #000;
             margin: 0;
             padding: 0;
+            font-size: 13pt;
         }
         .header {
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            margin-bottom: 35px;
+            margin-bottom: 25px;
         }
         .logo {
-            width: 140px;
+            width: 120px;
             height: auto;
         }
         .role-section {
-            margin-bottom: 18px;
+            margin-bottom: 15px;
         }
         .role-section p {
-            margin: 3px 0;
-            font-size: 12px;
-            line-height: 1.5;
+            margin: 2px 0;
+            font-size: 11pt;
+            line-height: 1.2;
         }
         .role-title {
-            margin-bottom: 5px !important;
+            margin-bottom: 4px !important;
+            font-size: 13pt;
         }
         .work-details {
-            margin-bottom: 18px;
+            margin-bottom: 15px;
         }
         .work-details p {
-            margin: 3px 0;
-            font-size: 12px;
-            line-height: 1.5;
+            margin: 2px 0;
+            font-size: 11pt;
+            line-height: 1.2;
         }
         .full-time-section {
-            margin-bottom: 22px;
+            margin-bottom: 20px;
         }
         .full-time-section p {
-            margin: 3px 0;
-            font-size: 12px;
-            line-height: 1.6;
+            margin: 2px 0;
+            font-size: 11pt;
+            line-height: 1.3;
         }
         .section {
-            margin-bottom: 22px;
+            margin-bottom: 20px;
             page-break-inside: avoid;
         }
         h3 {
-            margin: 0 0 12px 0;
+            margin: 0 0 8px 0;
             color: #000;
-            font-size: 13px;
+            font-size: 12pt;
             font-weight: 700;
             page-break-after: avoid;
             text-transform: none;
-        }
-        h3:before {
-            content: '';
-        }
-        .section h3 {
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 6px;
+            border-bottom: none;
+            padding-bottom: 0;
         }
         p {
-            font-size: 12px;
-            line-height: 1.6;
-            margin: 0 0 12px 0;
+            font-size: 11pt;
+            line-height: 1.3;
+            margin: 0 0 10px 0;
         }
-        strong {
-            font-weight: 700;
-        }
-        b {
+        strong, b {
             font-weight: 700;
         }
         ul {
-            margin: 0 0 0 22px;
+            margin: 0 0 10px 20px;
             padding: 0;
             list-style-type: disc;
         }
         li {
-            margin-bottom: 8px;
-            font-size: 12px;
-            line-height: 1.6;
+            margin-bottom: 5px;
+            font-size: 11pt;
+            line-height: 1.3;
             padding-left: 5px;
         }
     </style>
@@ -603,11 +599,11 @@ Generate a polished, professional Job Description using this exact template stru
             # Generate PDF using WeasyPrint
             HTML(string=html_out, base_url='.').write_pdf(pdf_filename)
             
-            print(f"✅ PDF generated successfully: {pdf_filename}")
+            print(f"PDF generated successfully: {pdf_filename}")
             return True
             
         except Exception as e:
-            print(f"❌ Error generating PDF: {e}")
+            print(f"Error generating PDF: {e}")
             import traceback
             traceback.print_exc()
             return False
@@ -629,7 +625,7 @@ Generate a polished, professional Job Description using this exact template stru
                 jd_content = f.read()
             
             if not jd_content.strip():
-                print(f"❌ File is empty: {txt_file}")
+                print(f"File is empty: {txt_file}")
                 return False
             
             print("✓ JD content loaded successfully")
@@ -668,10 +664,10 @@ Generate a polished, professional Job Description using this exact template stru
             return self.generate_pdf(jd_content, hr_input, output_filename)
             
         except FileNotFoundError:
-            print(f"❌ File not found: {txt_file}")
+            print(f"File not found: {txt_file}")
             return False
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"Error: {e}")
             import traceback
             traceback.print_exc()
             return False
