@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Briefcase, UserCheck, Eye, EyeOff, LogIn } from 'lucide-react'
 import { useAuth } from '../context/useAuth'
+import { useToast } from '../hooks/useToast'
+import { ApiError } from '../types/api'
 import stackularLogo from '../assets/Stackular_logo.svg'
 import type { UserRole } from '../types'
 
@@ -16,6 +18,7 @@ function getGreeting(): string {
 
 export default function LoginPage() {
   const { login } = useAuth()
+  const { showToast } = useToast()
   const navigate = useNavigate()
   const logoRef = useRef<HTMLImageElement>(null)
   const orbRef = useRef<HTMLDivElement>(null)
@@ -52,13 +55,18 @@ export default function LoginPage() {
       return
     }
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 400))
-    const ok = login(username, password, role)
-    setLoading(false)
-    if (!ok) {
-      setError('Invalid credentials. Please check your username and password.')
+    try {
+      await login(username, password, role)
+    } catch (err) {
+      setLoading(false)
+      if (err instanceof ApiError && err.status === 401) {
+        setError('Invalid credentials. Please check your username and password.')
+      } else {
+        showToast('Something went wrong, please try again.', 'error')
+      }
       return
     }
+    setLoading(false)
 
     const dest = role === 'recruitment' ? '/recruitment/job-posting' : '/interviewer/dashboard'
     const rect = logoRef.current!.getBoundingClientRect()
