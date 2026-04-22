@@ -1,43 +1,67 @@
-import { createContext, useState, useEffect } from 'react'
+import { createContext, useState } from 'react'
+import { login as apiLogin } from '../services/authApi'
+import { queryClient } from '../lib/queryClient'
 import type { User, UserRole } from '../types'
-import { USERS } from '../constants/users'
 
 interface AuthContextValue {
   user: User | null
-  login: (username: string, password: string, role: UserRole) => boolean
+  token: string | null
+  isLoading: boolean
+  login: (username: string, password: string, role: UserRole) => Promise<void>
   logout: () => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+interface StoredAuth {
+  token: string
+  user: User
+}
+
+function loadStoredAuth(): StoredAuth | null {
+  try {
+    const raw = localStorage.getItem('ats_user')
+    return raw ? (JSON.parse(raw) as StoredAuth) : null
+  } catch {
+    return null
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    const stored = localStorage.getItem('ats_user')
-    return stored ? JSON.parse(stored) : null
-  })
+  const [stored, setStored] = useState<StoredAuth | null>(loadStoredAuth)
+  const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem('ats_user', JSON.stringify(user))
-    } else {
-      localStorage.removeItem('ats_user')
+  async function login(username: string, password: string, role: UserRole): Promise<void> {
+    setIsLoading(true)
+    try {
+      const res = await apiLogin(username, password, role)
+      const auth: StoredAuth = { token: res.token, user: res.user }
+      localStorage.setItem('ats_user', JSON.stringify(auth))
+      setStored(auth)
+    } finally {
+      setIsLoading(false)
     }
-  }, [user])
-
-  function login(username: string, password: string, role: UserRole): boolean {
-    const match = USERS.find(
-      (u) => u.username.toLocaleLowerCase() === username.toLocaleLowerCase() && u.password === password && u.role === role
-    )
-    if (!match) return false
-    setUser({ id: match.id, username: match.username, role: match.role, name: match.name })
-    return true
   }
 
-  function logout() {
-    setUser(null)
+  function logout(): void {
+    localStorage.removeItem('ats_user')
+    queryClient.clear()
+    setStored(null)
   }
 
-  return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider
+      value={{
+        user: stored?.user ?? null,
+        token: stored?.token ?? null,
+        isLoading,
+        login,
+        logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export { AuthContext }
