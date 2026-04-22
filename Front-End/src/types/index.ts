@@ -1,4 +1,6 @@
 export type UserRole = 'recruitment' | 'interviewer'
+export type ExperienceLevel = 'intern' | 'fresher' | 'experienced'
+export type JDStatus = 'draft' | 'assigned' | 'returned' | 'finalized'
 
 export interface User {
   id: number
@@ -8,15 +10,24 @@ export interface User {
   password?: string
 }
 
-export type HireType = 'fresher' | 'experienced'
-
-export interface FresherJobForm {
+export interface JDDraft {
+  id: string
+  experienceLevel: ExperienceLevel
   jobTitle: string
-  requiredSkills: string
-}
-
-export interface ExperiencedJobForm extends FresherJobForm {
-  experience: string
+  location: string
+  workMode: string
+  workHours: string
+  duration: string
+  stipend: string
+  salary: string
+  fullTimeOfferSalary: string
+  experienceYears: string
+  roleDescription: string
+  assignedTo: string[]
+  status: JDStatus
+  createdBy: string
+  createdAt: string
+  generatedJD: string
 }
 
 export interface GeneratedJD {
