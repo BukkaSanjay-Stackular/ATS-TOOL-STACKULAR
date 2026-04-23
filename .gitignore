@@ -2,8 +2,17 @@
 .claude/skills/
 .venv/
 venv/
+
+# .NET
+bin/
+obj/
+.vs/
+appsettings.Development.json
+
+# Python / General
+.venv
 .env
-__pycache__/    
+__pycache__/
 *.pyc
 .idea/
 .DS_Store
@@ -13,3 +22,4 @@ __pycache__/
 !AI Models/jd_creation/AI_ML Intern 1.pdf
 !AI Models/jd_creation/jd_prompt_template.md
 
+venv
