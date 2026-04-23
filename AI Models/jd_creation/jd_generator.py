@@ -1,7 +1,4 @@
-"""
-JD Generator using LLM (OpenRouter)
-This module generates Job Descriptions based on HR form inputs
-"""
+#JD Generator using LLM (OpenRouter).This module generates Job Descriptions based on HR form inputs
 
 import os
 import json

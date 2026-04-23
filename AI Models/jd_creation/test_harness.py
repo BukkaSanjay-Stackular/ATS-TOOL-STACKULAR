@@ -1,7 +1,4 @@
-"""
-Test Harness for JD Generator
-Runs the generator with sample inputs and validates output
-"""
+#Test Harness for JD Generator.Runs the generator with sample inputs and validates output
 
 import json
 import os

@@ -1,7 +1,4 @@
-"""
-Interactive CLI Tool for JD Generation (SIMPLIFIED)
-Takes only 8 basic inputs + role description, LLM generates the rest
-"""
+#Interactive CLI Tool for JD Generation.Takes only 8 basic inputs + role description, LLM generates the rest
 
 import json
 import os
