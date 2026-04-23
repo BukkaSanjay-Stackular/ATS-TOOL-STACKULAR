@@ -1,5 +1,7 @@
 .gitnexus
 .claude/skills/
+.venv/
+venv/
 
 # .NET
 bin/
@@ -15,4 +17,9 @@ __pycache__/
 .idea/
 .DS_Store
 *.log
+*.pdf
+*.txt
+!AI Models/jd_creation/AI_ML Intern 1.pdf
+!AI Models/jd_creation/jd_prompt_template.md
+
 venv
