@@ -5,12 +5,14 @@ Exposes REST API endpoint for .NET backend to call
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from typing import Optional
 from jd_generator import JDGenerator
 import os
 from dotenv import load_dotenv
 import logging
+from io import BytesIO
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -87,6 +89,35 @@ class JDResponse(BaseModel):
     jd: Optional[str] = None
     error: Optional[str] = None
     message: Optional[str] = None
+
+
+class PDFDownloadRequest(BaseModel):
+    """
+    Request to download JD as PDF (with optionally edited content)
+    """
+    jdContent: str  # The JD content (can be edited from original generated JD)
+    jobTitle: str   # Job title for filename
+    experienceLevel: Optional[str] = None
+    location: Optional[str] = None
+    workMode: Optional[str] = None
+    workHours: Optional[str] = None
+    duration: Optional[str] = None
+    stipend: Optional[str] = None
+    salary: Optional[str] = None
+    fullTimeOfferSalary: Optional[str] = None
+    experienceYears: Optional[str] = None
+    companyName: Optional[str] = "Stackular"
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "jdContent": "## Job Title\nAI Engineer\n\n### About Us\n...",
+                "jobTitle": "Senior AI Engineer",
+                "location": "Hyderabad",
+                "workMode": "Remote",
+                "companyName": "Stackular"
+            }
+        }
 
 
 class HealthResponse(BaseModel):
@@ -268,6 +299,85 @@ async def generate_jd_and_pdf(request: JDRequest):
         )
 
 
+@app.post("/download-pdf", tags=["JD Generation"])
+async def download_pdf(request: PDFDownloadRequest):
+    """
+    Download JD as PDF file (supports edited JD content)
+    
+    Input:
+    - jdContent: The JD content (can be edited from original)
+    - jobTitle: Required. Job title for the filename
+    - Other fields: Optional, for PDF styling and metadata
+    
+    Output:
+    Binary PDF file with proper headers for browser download
+    """
+    try:
+        logger.info(f"📥 PDF Download Request for: {request.jobTitle}")
+        
+        # Validate JD content
+        if not request.jdContent or request.jdContent.strip() == "":
+            logger.error("❌ JD content is empty")
+            raise ValueError("JD content cannot be empty")
+        
+        # Create HR input dictionary for PDF styling
+        hr_input = {
+            "job_title": request.jobTitle,
+            "experience_level": request.experienceLevel,
+            "location": request.location or "Not specified",
+            "work_mode": request.workMode or "Not specified",
+            "work_hours": request.workHours or "Not specified",
+            "duration": request.duration or "Not specified",
+            "stipend_salary": int(request.stipend) if request.stipend else None,
+            "salary": int(request.salary) if request.salary else None,
+            "fulltime_offer_salary": int(request.fullTimeOfferSalary) if request.fullTimeOfferSalary else None,
+            "years_of_experience": int(request.experienceYears) if request.experienceYears else None,
+            "company_name": request.companyName or "Stackular",
+            "about_us": "At Stackular, we are a community of builders creating world-class products."
+        }
+        
+        # Generate PDF as bytes
+        logger.info(f"🔄 Generating PDF...")
+        generator = JDGenerator()
+        pdf_bytes = generator.generate_pdf_bytes(request.jdContent, hr_input)
+        
+        if not pdf_bytes:
+            logger.error("❌ Failed to generate PDF")
+            raise ValueError("Failed to generate PDF content")
+        
+        # Create filename (sanitize job title)
+        safe_filename = request.jobTitle.replace(' ', '_').replace('/', '_').replace('\\', '_')
+        filename = f"JD_{safe_filename}.pdf"
+        
+        logger.info(f"✅ PDF generated ({len(pdf_bytes)} bytes): {filename}")
+        
+        # Return PDF as binary stream for download
+        return StreamingResponse(
+            BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+    
+    except ValueError as ve:
+        logger.error(f"❌ Validation Error: {str(ve)}")
+        raise HTTPException(status_code=400, detail=str(ve))
+    
+    except Exception as e:
+        logger.error(f"❌ Unexpected Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {str(e)}")
+    
+    
+@app.post("/edit-and-download-pdf", tags=["JD Generation"])
+async def edit_and_download_pdf(request: PDFDownloadRequest):
+    """
+    Alternative endpoint: Edit JD content and download as PDF in one request
+    Same functionality as /download-pdf but with a more descriptive name
+    """
+    return await download_pdf(request)
+
+
 # ============================================================================
 # STARTUP/SHUTDOWN EVENTS
 # ============================================================================
@@ -286,6 +396,7 @@ async def startup_event():
     print("║" + " "*68 + "║")
     print("║" + "Available Endpoints:".ljust(68) + "║")
     print("║" + "  • POST /generate-jd    - Generate JD from form data".ljust(68) + "║")
+    print("║" + "  • POST /download-pdf   - Download JD as PDF (supports edits)".ljust(68) + "║")
     print("║" + "  • GET  /health         - API health check".ljust(68) + "║")
     print("║" + " "*68 + "║")
     print("╚" + "═"*68 + "╝")

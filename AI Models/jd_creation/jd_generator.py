@@ -608,6 +608,228 @@ Generate a polished, professional Job Description using this exact template stru
             traceback.print_exc()
             return False
     
+    def generate_pdf_bytes(self, jd_content: str, hr_input: dict) -> bytes:
+        """
+        Generate a PDF as bytes (in-memory) from JD content
+        
+        Args:
+            jd_content: The generated JD text (can be edited)
+            hr_input: Original HR input data for styling/metadata
+        
+        Returns:
+            PDF content as bytes, or None if generation fails
+        """
+        try:
+            # Parse JD content into structured data
+            data = self.parse_jd_content(jd_content, hr_input)
+            
+            # HTML template (inline)
+            html_template = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Job Description - {{ role }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1in;
+        }
+        body {
+            font-family: 'Aptos', 'Calibri', 'Segoe UI', Arial, sans-serif;
+            line-height: 1.2;
+            color: #000;
+            margin: 0;
+            padding: 0;
+            font-size: 13pt;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 25px;
+        }
+        .logo {
+            width: 120px;
+            height: auto;
+        }
+        .role-section {
+            margin-bottom: 15px;
+        }
+        .role-section p {
+            margin: 2px 0;
+            font-size: 11pt;
+            line-height: 1.2;
+        }
+        .role-title {
+            margin-bottom: 4px !important;
+            font-size: 13pt;
+        }
+        .work-details {
+            margin-bottom: 15px;
+        }
+        .work-details p {
+            margin: 2px 0;
+            font-size: 11pt;
+            line-height: 1.2;
+        }
+        .full-time-section {
+            margin-bottom: 20px;
+        }
+        .full-time-section p {
+            margin: 2px 0;
+            font-size: 11pt;
+            line-height: 1.3;
+        }
+        .section {
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+        h3 {
+            margin: 0 0 8px 0;
+            color: #000;
+            font-size: 12pt;
+            font-weight: 700;
+            page-break-after: avoid;
+            text-transform: none;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        p {
+            font-size: 11pt;
+            line-height: 1.3;
+            margin: 0 0 10px 0;
+        }
+        strong, b {
+            font-weight: 700;
+        }
+        ul {
+            margin: 0 0 10px 20px;
+            padding: 0;
+            list-style-type: disc;
+        }
+        li {
+            margin-bottom: 5px;
+            font-size: 11pt;
+            line-height: 1.3;
+            padding-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        {% if logo_path %}
+        <img src="{{ logo_path }}" class="logo">
+        {% else %}
+        <h1 style="margin: 0; font-size: 24px;">{{ company_name }}</h1>
+        {% endif %}
+    </div>
+
+    <!-- Role Info -->
+    <div class="role-section">
+        <p class="role-title"><strong>Role:</strong> <strong>{{ role }}</strong></p>
+        <p><strong>Duration:</strong> {{ duration }}</p>
+        <p><strong>Location:</strong> {{ location }}</p>
+        <p><strong>Work mode:</strong> {{ work_mode }}</p>
+    </div>
+
+    <div class="work-details">
+        <p><strong>Work Hours:</strong> {{ work_hours }}</p>
+        <p><strong>Stipend:</strong> <strong>{{ stipend }}</strong></p>
+    </div>
+
+    {% if full_time %}
+    <div class="full-time-section">
+        <p><strong>Full-Time Offer:</strong> {{ full_time }}</p>
+    </div>
+    {% endif %}
+
+    <!-- About -->
+    {% if about %}
+    <div class="section">
+        <p><strong>About us:</strong> {{ about }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Role Overview -->
+    {% if overview %}
+    <div class="section">
+        <h3>Role Overview</h3>
+        <p>{{ overview }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Work -->
+    {% if work %}
+    <div class="section">
+        <h3>What You'll Work On</h3>
+        <ul>
+            {% for item in work %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Requirements -->
+    {% if requirements %}
+    <div class="section">
+        <h3>What You Need</h3>
+        <ul>
+            {% for item in requirements %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Good to have -->
+    {% if good_to_have %}
+    <div class="section">
+        <h3>Great to Have</h3>
+        <ul>
+            {% for item in good_to_have %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Who Can Apply -->
+    {% if who_can_apply %}
+    <div class="section">
+        <h3>Who Can Apply</h3>
+        <ul>
+            {% for item in who_can_apply %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</body>
+</html>
+            """
+            
+            # Render HTML using Jinja2
+            template = Template(html_template)
+            html_out = template.render(data)
+            
+            # Generate PDF as bytes using WeasyPrint
+            from io import BytesIO
+            pdf_bytes = BytesIO()
+            HTML(string=html_out, base_url='.').write_pdf(pdf_bytes)
+            pdf_bytes.seek(0)
+            
+            print(f"PDF generated successfully as bytes ({len(pdf_bytes.getvalue())} bytes)")
+            return pdf_bytes.getvalue()
+            
+        except Exception as e:
+            print(f"Error generating PDF bytes: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
+    
     def generate_pdf_from_file(self, txt_file: str) -> bool:
         """
         Generate a PDF from an existing .txt JD file
