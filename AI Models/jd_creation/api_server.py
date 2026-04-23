@@ -28,7 +28,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5000",      # .NET Backend (HTTP)
-        "http://localhost:5001",      # .NET Backend (HTTPS)
+        "http://localhost:5171",      # .NET Backend (HTTPS)
         "https://localhost:5001",     # .NET Backend (HTTPS)
         "http://localhost:5173",      # Frontend (Vite dev server)
         "http://127.0.0.1:5000",

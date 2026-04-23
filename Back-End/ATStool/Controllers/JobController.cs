@@ -88,7 +88,7 @@ namespace ATStool.Controllers
                 IsActive = true
             };
 
-            object JobFormat = new
+            object jobFormat = new
             {
                 jobTitle = job.JobTitle,
                 experienceLevel = job.ExperienceLevel,
@@ -96,13 +96,14 @@ namespace ATStool.Controllers
                 workMode = job.WorkMode,
                 workHours = job.WorkHours,
                 duration = job.Duration,
-                stipend = job.Stipend,
-                salary = job.Salary,
-                fullTimeOfferSalary = job.FullTimeOfferSalary,
-                experienceYears = job.ExperienceYears,
+                stipend = job.Stipend.ToString(),                     // ← convert to string
+                salary = job.Salary.ToString(),                       // ← convert to string
+                fullTimeOfferSalary = job.FullTimeOfferSalary.ToString(), // ← convert to string
+                experienceYears = job.ExperienceYears.ToString(),     // ← convert to string
                 roleDescription = job.RoleDescription,
                 companyName = "Stackular"
             };
+
 
             _context.Jobs.Add(job);
             await _context.SaveChangesAsync();
@@ -119,7 +120,7 @@ namespace ATStool.Controllers
             //    body = "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
             //};
 
-            var externalResponse = await _apiService.PostAsync<ExternalApiResponse>(externalUrl, JobFormat
+            var externalResponse = await _apiService.PostAsync<ExternalApiResponse>(externalUrl, jobFormat
                 ); // ✅ returns object
 
             job.RoleDescription = externalResponse.Jd; 

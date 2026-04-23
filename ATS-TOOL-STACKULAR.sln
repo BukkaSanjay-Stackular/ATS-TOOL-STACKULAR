@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Back-End", "Back-End", "{B670D836-3F3F-1B65-310F-B37E3F845B14}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ATStool", "Back-End\ATStool\ATStool.csproj", "{D85991F0-90A8-E027-CFC5-AC8F6E6AB4B1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D85991F0-90A8-E027-CFC5-AC8F6E6AB4B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D85991F0-90A8-E027-CFC5-AC8F6E6AB4B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D85991F0-90A8-E027-CFC5-AC8F6E6AB4B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D85991F0-90A8-E027-CFC5-AC8F6E6AB4B1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D85991F0-90A8-E027-CFC5-AC8F6E6AB4B1} = {B670D836-3F3F-1B65-310F-B37E3F845B14}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {31C160F0-ADAA-4BDE-963F-41D2660E3D42}
+	EndGlobalSection
+EndGlobal
