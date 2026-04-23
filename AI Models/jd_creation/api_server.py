@@ -1,7 +1,4 @@
-"""
-FastAPI Server for JD Generation
-Exposes REST API endpoint for .NET backend to call
-"""
+#FastAPI Server for JD Generation.Exposes REST API endpoint for .NET backend to call
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -94,28 +91,30 @@ class JDResponse(BaseModel):
 class PDFDownloadRequest(BaseModel):
     """
     Request to download JD as PDF (with optionally edited content)
+    Format received from Frontend after editing
     """
-    jdContent: str  # The JD content (can be edited from original generated JD)
-    jobTitle: str   # Job title for filename
-    experienceLevel: Optional[str] = None
+    finalJD: str  # The edited JD content
+    job_title: str   # Job title for filename
+    experience_level: Optional[str] = None
     location: Optional[str] = None
-    workMode: Optional[str] = None
-    workHours: Optional[str] = None
+    work_mode: Optional[str] = None
+    work_hours: Optional[str] = None
     duration: Optional[str] = None
-    stipend: Optional[str] = None
-    salary: Optional[str] = None
-    fullTimeOfferSalary: Optional[str] = None
-    experienceYears: Optional[str] = None
-    companyName: Optional[str] = "Stackular"
+    stipend_salary: Optional[str] = None
+    fulltime_offer_salary: Optional[str] = None
+    years_of_experience: Optional[str] = None
+    role_description: Optional[str] = None
+    assigned_to: Optional[list] = None  # Not used for PDF generation, just for reference
     
     class Config:
         json_schema_extra = {
             "example": {
-                "jdContent": "## Job Title\nAI Engineer\n\n### About Us\n...",
-                "jobTitle": "Senior AI Engineer",
+                "finalJD": "## Senior AI Engineer\n\n### About Us\n...",
+                "job_title": "Senior AI Engineer",
                 "location": "Hyderabad",
-                "workMode": "Remote",
-                "companyName": "Stackular"
+                "work_mode": "Remote",
+                "experience_level": "experienced",
+                "years_of_experience": "5"
             }
         }
 
@@ -302,51 +301,51 @@ async def generate_jd_and_pdf(request: JDRequest):
 @app.post("/download-pdf", tags=["JD Generation"])
 async def download_pdf(request: PDFDownloadRequest):
     """
-    Download JD as PDF file (supports edited JD content)
+    Download JD as PDF file (with edited content)
     
     Input:
-    - jdContent: The JD content (can be edited from original)
-    - jobTitle: Required. Job title for the filename
-    - Other fields: Optional, for PDF styling and metadata
+    - finalJD: The edited JD content (required)
+    - job_title: Required. Job title for the filename
+    - experience_level, location, work_mode, etc: Optional, for PDF styling
+    - assigned_to: Ignored (for backend reference only)
     
     Output:
     Binary PDF file with proper headers for browser download
     """
     try:
-        logger.info(f"📥 PDF Download Request for: {request.jobTitle}")
+        logger.info(f"📥 PDF Download Request for: {request.job_title}")
         
         # Validate JD content
-        if not request.jdContent or request.jdContent.strip() == "":
+        if not request.finalJD or request.finalJD.strip() == "":
             logger.error("❌ JD content is empty")
             raise ValueError("JD content cannot be empty")
         
         # Create HR input dictionary for PDF styling
         hr_input = {
-            "job_title": request.jobTitle,
-            "experience_level": request.experienceLevel,
+            "job_title": request.job_title,
+            "experience_level": request.experience_level or "Not specified",
             "location": request.location or "Not specified",
-            "work_mode": request.workMode or "Not specified",
-            "work_hours": request.workHours or "Not specified",
+            "work_mode": request.work_mode or "Not specified",
+            "work_hours": request.work_hours or "Not specified",
             "duration": request.duration or "Not specified",
-            "stipend_salary": int(request.stipend) if request.stipend else None,
-            "salary": int(request.salary) if request.salary else None,
-            "fulltime_offer_salary": int(request.fullTimeOfferSalary) if request.fullTimeOfferSalary else None,
-            "years_of_experience": int(request.experienceYears) if request.experienceYears else None,
-            "company_name": request.companyName or "Stackular",
+            "stipend_salary": int(request.stipend_salary) if request.stipend_salary else None,
+            "fulltime_offer_salary": int(request.fulltime_offer_salary) if request.fulltime_offer_salary else None,
+            "years_of_experience": int(request.years_of_experience) if request.years_of_experience else None,
+            "company_name": "Stackular",
             "about_us": "At Stackular, we are a community of builders creating world-class products."
         }
         
         # Generate PDF as bytes
         logger.info(f"🔄 Generating PDF...")
         generator = JDGenerator()
-        pdf_bytes = generator.generate_pdf_bytes(request.jdContent, hr_input)
+        pdf_bytes = generator.generate_pdf_bytes(request.finalJD, hr_input)
         
         if not pdf_bytes:
             logger.error("❌ Failed to generate PDF")
             raise ValueError("Failed to generate PDF content")
         
         # Create filename (sanitize job title)
-        safe_filename = request.jobTitle.replace(' ', '_').replace('/', '_').replace('\\', '_')
+        safe_filename = request.job_title.replace(' ', '_').replace('/', '_').replace('\\', '_')
         filename = f"JD_{safe_filename}.pdf"
         
         logger.info(f"✅ PDF generated ({len(pdf_bytes)} bytes): {filename}")
