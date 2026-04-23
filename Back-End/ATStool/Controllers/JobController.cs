@@ -8,7 +8,7 @@ using ATStool.Models;
 namespace ATStool.Controllers
 {
     [ApiController]
-    [Route("api/jobs")]
+    [Route("api/drafts")]
     [Authorize]
     public class JobController : ControllerBase
     {
@@ -26,8 +26,8 @@ namespace ATStool.Controllers
             return Ok(ApiResponse<object>.Ok("Jobs fetched successfully.", jobs));
         }
 
-        //GET api/jobs/all -Admin/Recruiter can see all including inactive
-        [HttpGet("all")]
+        //GET api/drafts -Admin/Recruiter can see all including inactive
+        [HttpGet("drafts")]
         [Authorize(Roles = "Admin,Recruiter,Interviewer")]
         public async Task<IActionResult> GetAllJobsAdmin()
         {

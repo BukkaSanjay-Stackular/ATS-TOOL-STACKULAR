@@ -12,5 +12,6 @@ namespace ATStool.Data
         }
 
         public DbSet<Jobs> Jobs { get; set; }
+        public DbSet<Draft> Drafts { get; set; }
     }
 }

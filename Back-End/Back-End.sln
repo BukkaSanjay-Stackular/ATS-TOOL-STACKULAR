@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ATStool", "ATStool\ATStool.csproj", "{FE19D30A-DE5D-47BF-A21B-DB0E3FBAAAFD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FE19D30A-DE5D-47BF-A21B-DB0E3FBAAAFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE19D30A-DE5D-47BF-A21B-DB0E3FBAAAFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE19D30A-DE5D-47BF-A21B-DB0E3FBAAAFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE19D30A-DE5D-47BF-A21B-DB0E3FBAAAFD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6E48F6F4-FBBF-4CA2-BD0C-70FF8116F143}
+	EndGlobalSection
+EndGlobal

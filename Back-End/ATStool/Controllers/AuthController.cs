@@ -68,10 +68,23 @@ namespace ATStool.Controllers
 
             var roles = await _userManager.GetRolesAsync(user);
             var userType = roles.FirstOrDefault() ?? "Interviewer";
+            var panelRole = userType == "Interviewer" ? "interviewer" : "recruitment";
 
             var token = _tokenService.GenerateToken(user, userType);
 
-            var data = new { token, userType, name = user.FullName, email = user.Email };
+            var data = new
+            {
+                token,
+                user = new
+                {
+                    id = user.Id,
+                    username = user.UserName,
+                    name = user.FullName,
+                    role = panelRole,
+                    userType,
+                    email = user.Email
+                }
+            };
 
             return Ok(ApiResponse<object>.Ok("Login successfull",data));
         }
