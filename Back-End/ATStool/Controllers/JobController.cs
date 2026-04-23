@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using ATStool.Data;
 using ATStool.DTOs;
 using ATStool.Models;
+using ATStool.Services;
+
 
 namespace ATStool.Controllers
 {
@@ -13,9 +15,14 @@ namespace ATStool.Controllers
     public class JobController : ControllerBase
     {
         private readonly AppDbContext _context;
-        public JobController(AppDbContext context)
+        private readonly ExternalApiService _apiService;
+        private readonly IConfiguration _config;
+
+        public JobController(AppDbContext context,ExternalApiService apiService,IConfiguration config)
         {
             _context = context;
+            _apiService = apiService;
+            _config = config;
         }
 
         [HttpGet]
@@ -81,7 +88,46 @@ namespace ATStool.Controllers
                 IsActive = true
             };
 
+            object JobFormat = new
+            {
+                jobTitle = job.JobTitle,
+                experienceLevel = job.ExperienceLevel,
+                location = job.Location,
+                workMode = job.WorkMode,
+                workHours = job.WorkHours,
+                duration = job.Duration,
+                stipend = job.Stipend,
+                salary = job.Salary,
+                fullTimeOfferSalary = job.FullTimeOfferSalary,
+                experienceYears = job.ExperienceYears,
+                roleDescription = job.RoleDescription,
+                companyName = "Stackular"
+            };
+
             _context.Jobs.Add(job);
+            await _context.SaveChangesAsync();
+
+
+            //Send job to external API and get RoleDescription back
+            var externalUrl = _config["ExternalApi:BaseUrl"];
+
+            //var testPayload = new
+            //{
+            //    userId = 1,
+            //    id = 1,
+            //    title = "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+            //    body = "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
+            //};
+
+            var externalResponse = await _apiService.PostAsync<ExternalApiResponse>(externalUrl, JobFormat
+                ); // ✅ returns object
+
+            job.RoleDescription = externalResponse.Jd; 
+
+            //Update RoleDescription with the response from external API
+            //job.RoleDescription = externalResponse.jd;
+     
+            //job.RoleDescription = externalResponse.body;
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetJobById), new

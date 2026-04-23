@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
 
 namespace ATStool.Models
 {
@@ -19,6 +20,9 @@ namespace ATStool.Models
         [JsonPropertyName("employment_type")]
         public string? EmploymentType { get; set; }
 
+        [JsonPropertyName("experience_level")]
+        public string? ExperienceLevel { get; set; }
+
         [JsonPropertyName("work_mode")]
         public string? WorkMode { get; set; }
 
@@ -35,12 +39,15 @@ namespace ATStool.Models
         public string? AssignedTo { get; set; }
 
         [JsonPropertyName("stipend")]
+        [Precision(18, 2)]
         public decimal Stipend { get; set; }
 
         [JsonPropertyName("salary")]
+        [Precision(18, 2)]
         public decimal Salary { get; set; }
 
         [JsonPropertyName("fulltime_offer_salary")]
+        [Precision(18, 2)]
         public decimal FullTimeOfferSalary { get; set; }
 
         [JsonPropertyName("experience_years")]

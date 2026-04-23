@@ -9,11 +9,10 @@ using ATStool.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//builder.Services.AddControllers();
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(opts =>
     {
-        opts.SuppressModelStateInvalidFilter = true;  // ← disables automatic validation
+        opts.SuppressModelStateInvalidFilter = true;
     });
 
 builder.Services.AddDbContext<AppDbContext>(opts =>
@@ -42,14 +41,31 @@ builder.Services
     });
 
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddHttpClient<ExternalApiService>(); // ← if you added ExternalApiService
+
+// ── CORS ──────────────────────────────────────────────────────────────
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(allowedOrigins!)
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+// ─────────────────────────────────────────────────────────────────────
 
 var app = builder.Build();
 
 await SeedData(app);
 
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllers();
+app.UseCors("AllowFrontend");   // ← 1st
+app.UseAuthentication();         // ← 2nd
+app.UseAuthorization();          // ← 3rd
+app.MapControllers();            // ← 4th
 app.Run();
 
 
@@ -71,4 +87,3 @@ static async Task SeedData(WebApplication app)
         await userManager.AddToRoleAsync(admin, "Admin");
     }
 }
- 
