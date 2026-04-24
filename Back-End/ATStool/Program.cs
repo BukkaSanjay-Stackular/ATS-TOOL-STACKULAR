@@ -38,10 +38,21 @@ builder.Services
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
         };
+
+        // ← Read JWT from cookie instead of Authorization header
+        opts.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                context.Token = context.Request.Cookies["ATSAuth"];
+                return Task.CompletedTask;
+            }
+        };
     });
 
+builder.Services.AddHttpContextAccessor(); // ← required for CookieService
 builder.Services.AddScoped<TokenService>();
-builder.Services.AddHttpClient<ExternalApiService>(); // ← if you added ExternalApiService
+builder.Services.AddHttpClient<ExternalApiService>();
 
 // ── CORS ──────────────────────────────────────────────────────────────
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
@@ -53,7 +64,7 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(allowedOrigins!)
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowCredentials(); // ← required for cookies
     });
 });
 // ─────────────────────────────────────────────────────────────────────

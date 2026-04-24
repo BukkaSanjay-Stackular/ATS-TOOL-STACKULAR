@@ -6,10 +6,10 @@ namespace ATStool.Models
     public class ExternalApiResponse
     {
         [JsonPropertyName("status")]
-        public string Status { get; set; }
+        public string? Status { get; set; }
 
         [JsonPropertyName("jd")]
-        public string Jd { get; set; }
+        public string? Jd { get; set; }
 
         [JsonPropertyName("message")]
         public string? Message { get; set; }
