@@ -89,13 +89,12 @@ app.Run();
 
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-
     foreach (var role in new[] { "Admin", "Recruiter", "Interviewer" })
 
         if (!await roleManager.RoleExistsAsync(role))
 
             await roleManager.CreateAsync(new IdentityRole(role));
 
-
-    // ✅ Roles are seeded automatically on startup ✅ Users are created via Register API only
+    // ✅ Roles are seeded automatically on startup
+    // ✅ Users are created via Register API only
 }

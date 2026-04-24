@@ -2,7 +2,6 @@
 
 namespace ATStool.DTOs
 {
-
     public class PatchJobDto
     {
         [JsonPropertyName("job_title")]
@@ -11,8 +10,8 @@ namespace ATStool.DTOs
         [JsonPropertyName("location")]
         public string? Location { get; set; }
 
-        [JsonPropertyName("employment_type")]
-        public string? EmploymentType { get; set; }
+        [JsonPropertyName("experience_level")]
+        public string? ExperienceLevel { get; set; }
 
         [JsonPropertyName("work_mode")]
         public string? WorkMode { get; set; }
@@ -23,32 +22,22 @@ namespace ATStool.DTOs
         [JsonPropertyName("duration")]
         public string? Duration { get; set; }
 
+        [JsonPropertyName("stipend_salary")]
+        public string? StipendSalary { get; set; }
+
+        [JsonPropertyName("fulltime_offer_salary")]
+        public string? FulltimeOfferSalary { get; set; }
+
+        [JsonPropertyName("years_of_experience")]
+        public string? YearsOfExperience { get; set; }
+
         [JsonPropertyName("role_description")]
         public string? RoleDescription { get; set; }
 
         [JsonPropertyName("assigned_to")]
-        public string? AssignedTo { get; set; }
+        public List<string>? AssignedTo { get; set; }
 
-        [JsonPropertyName("stipend")]
-        public decimal? Stipend { get; set; }
-
-        [JsonPropertyName("salary")]
-        public decimal? Salary { get; set; }
-
-        [JsonPropertyName("fulltime_offer_salary")]
-        public decimal? FullTimeOfferSalary { get; set; }
-
-        [JsonPropertyName("experience_years")]
-        public double? ExperienceYears { get; set; }
-
-        [JsonPropertyName("posted_date")]
-        public DateTime? PostedDate { get; set; }
-
-        [JsonPropertyName("deadline")]
-        public DateTime? DeadLine { get; set; }
-
-        [JsonPropertyName("is_active")]
-        public bool? IsActive { get; set; }
+        [JsonPropertyName("status")]
+        public string? Status { get; set; }
     }
-
 }
