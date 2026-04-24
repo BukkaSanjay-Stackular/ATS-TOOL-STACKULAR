@@ -81,7 +81,9 @@ app.Run();
 
 
 // ── Seed Roles & Default Admin ────────────────────────────────────────
-// ── Seed Roles & Default Admin ────────────────────────────────────────static async Task SeedData(WebApplication app)
+// ── Seed Roles & Default Admin ────────────────────────────────────────
+
+static async Task SeedData(WebApplication app)
 
 {
 
