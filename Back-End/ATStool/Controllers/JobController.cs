@@ -10,7 +10,7 @@ using ATStool.Services;
 namespace ATStool.Controllers
 {
     [ApiController]
-    [Route("api/jobs")]
+    [Route("api/drafts")]
     [Authorize]
     public class JobController : ControllerBase
     {
@@ -42,7 +42,7 @@ namespace ATStool.Controllers
             return Ok(ApiResponse<object>.Ok("All jobs fetched successfully.", jobs));
         }
 
-        //Get api/jobs/{id}
+        //Get api/drafts/{id}
         [HttpGet("{id:Guid}")]
         public async Task<IActionResult> GetJobById
             (Guid id)
@@ -57,7 +57,7 @@ namespace ATStool.Controllers
             return Ok(ApiResponse<object>.Ok("Job fetched successfully.", job));
         }
 
-        //Post api/jobs - Only admin or Recruiter can post jobs
+        //Post api/drafts - Only admin or Recruiter can post jobs
         [HttpPost]
         [Authorize(Roles = "Admin,Recruiter")]
         public async Task<IActionResult> CreateJob(CreateJobDto dto)
@@ -88,21 +88,21 @@ namespace ATStool.Controllers
                 IsActive = true
             };
 
-            object jobFormat = new
-            {
-                jobTitle = job.JobTitle,
-                experienceLevel = job.ExperienceLevel,
-                location = job.Location,
-                workMode = job.WorkMode,
-                workHours = job.WorkHours,
-                duration = job.Duration,
-                stipend = job.Stipend.ToString(),                     // ← convert to string
-                salary = job.Salary.ToString(),                       // ← convert to string
-                fullTimeOfferSalary = job.FullTimeOfferSalary.ToString(), // ← convert to string
-                experienceYears = job.ExperienceYears.ToString(),     // ← convert to string
-                roleDescription = job.RoleDescription,
-                companyName = "Stackular"
-            };
+            //object jobFormat = new
+            //{
+            //    jobTitle = job.JobTitle,
+            //    experienceLevel = job.ExperienceLevel,
+            //    location = job.Location,
+            //    workMode = job.WorkMode,
+            //    workHours = job.WorkHours,
+            //    duration = job.Duration,
+            //    stipend = job.Stipend.ToString(),                     // ← convert to string
+            //    salary = job.Salary.ToString(),                       // ← convert to string
+            //    fullTimeOfferSalary = job.FullTimeOfferSalary.ToString(), // ← convert to string
+            //    experienceYears = job.ExperienceYears.ToString(),     // ← convert to string
+            //    roleDescription = job.RoleDescription,
+            //    companyName = "Stackular"
+            //};
 
 
             _context.Jobs.Add(job);
@@ -110,7 +110,7 @@ namespace ATStool.Controllers
 
 
             //Send job to external API and get RoleDescription back
-            var externalUrl = _config["ExternalApi:BaseUrl"];
+            //var externalUrl = _config["ExternalApi:BaseUrl"];
 
             //var testPayload = new
             //{
@@ -120,14 +120,13 @@ namespace ATStool.Controllers
             //    body = "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
             //};
 
-            var externalResponse = await _apiService.PostAsync<ExternalApiResponse>(externalUrl, jobFormat
-                ); // ✅ returns object
+            //var externalResponse = await _apiService.PostAsync<ExternalApiResponse>(externalUrl, jobFormat); // ✅ returns object - main
 
-            job.RoleDescription = externalResponse.Jd; 
+            //job.RoleDescription = externalResponse.Jd; - main
 
             //Update RoleDescription with the response from external API
             //job.RoleDescription = externalResponse.jd;
-     
+
             //job.RoleDescription = externalResponse.body;
             await _context.SaveChangesAsync();
 
@@ -138,9 +137,9 @@ namespace ATStool.Controllers
             }, ApiResponse<object>.Ok("Job created successfully.", job));
         }
 
-        //PUT api/jobs/{id} - Admin or Recruiter,Interviewer can update
+        //PUT api/drafts/{id} - Admin or Recruiter,Interviewer can update
         [HttpPatch("{id:guid}")]
-        [Authorize(Roles = "Admin,Recruiter,Interviewer")]
+        [Authorize(Roles = "Admin,Recruiter")]
         public async Task<IActionResult> UpdateJob(Guid id, PatchJobDto dto)
         {
             if (!ModelState.IsValid)
@@ -183,7 +182,7 @@ namespace ATStool.Controllers
 
 
 
-        //Patch api/jobs/{id}/toggle - Soft enable/disable a job
+        //Patch api/drafts/{id}/toggle - Soft enable/disable a job
         [HttpPatch("{id:guid}/toggle")]
         [Authorize(Roles = "Admin,Recruiter,Interviewer")]
         public async Task<IActionResult> ToggleJobStatus(Guid id)
@@ -208,7 +207,7 @@ namespace ATStool.Controllers
 
         }
 
-        //DELETE api/jobs/{id} - Hard delete, Admin only
+        //DELETE api/drafts/{id} - Hard delete, Admin only
         [HttpDelete("{id:guid}")]
         [Authorize(Roles = "Admin,Recruiter")]
         public async Task<IActionResult> DeleteJob(Guid id)
@@ -220,7 +219,7 @@ namespace ATStool.Controllers
             _context.Jobs.Remove(job);
             await _context.SaveChangesAsync();
 
-            return Ok(ApiResponse<string>.Ok("Job deleted successfully.", null));
+            return Ok(ApiResponse<string?>.Ok("Job deleted successfully.", null));
         }
 
     }

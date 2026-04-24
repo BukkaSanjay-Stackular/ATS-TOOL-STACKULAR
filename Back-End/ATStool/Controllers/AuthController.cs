@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ATStool.Models;
 using ATStool.DTOs;
 using ATStool.Services;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ATStool.Controllers
 {
@@ -33,16 +33,16 @@ namespace ATStool.Controllers
                 FullName = dto.FullName,
                 Email = dto.Email,
                 UserName = dto.UserName,
-                UserType = dto.UserType   // ← UserType instead of Role
+                UserType = dto.UserType
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            await _userManager.AddToRoleAsync(user, dto.UserType);  // ← UserType used as role
+            await _userManager.AddToRoleAsync(user, dto.UserType);
 
-            return Ok(ApiResponse<object>.Ok("User successfully Created",user));
+            return Ok(ApiResponse<object>.Ok("User successfully Created", user));
         }
 
         [HttpPost("login")]
@@ -60,20 +60,31 @@ namespace ATStool.Controllers
 
             var user = await _userManager.FindByNameAsync(dto.UserName);
             if (user == null)
-                return Unauthorized(ApiResponse<string>.Fail("Invalid email or password"));
+                return Unauthorized(ApiResponse<string>.Fail("Invalid username or password"));
 
             var isPasswordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
             if (!isPasswordValid)
-                return Unauthorized(ApiResponse<string>.Fail("Invalid email or password."));
+                return Unauthorized(ApiResponse<string>.Fail("Invalid username or password."));
 
             var roles = await _userManager.GetRolesAsync(user);
             var userType = roles.FirstOrDefault() ?? "Interviewer";
 
-            var token = _tokenService.GenerateToken(user, userType);
+            // ← Generate JWT and set it as cookie in one line
+            _tokenService.GenerateAndSetToken(user, userType);
 
-            var data = new { token, userType, name = user.FullName, email = user.Email };
+            var data = new { userType, name = user.FullName, email = user.Email };
+            // ← Removed token from response, it's now in the cookie
 
-            return Ok(ApiResponse<object>.Ok("Login successfull",data));
+            return Ok(ApiResponse<object>.Ok("Login successful.", data));
+        }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public IActionResult Logout()
+        {
+            _tokenService.ClearTokenCookie(); // ← clears the cookie
+
+            return Ok(ApiResponse<string>.Ok("Logged out successfully.", null));
         }
     }
 }

@@ -21,7 +21,7 @@ namespace ATStool.Models
         public string? EmploymentType { get; set; }
 
         [JsonPropertyName("experience_level")]
-        public string? ExperienceLevel { get; set; }
+        public string? ExperienceLevel { get;set; }
 
         [JsonPropertyName("work_mode")]
         public string? WorkMode { get; set; }
