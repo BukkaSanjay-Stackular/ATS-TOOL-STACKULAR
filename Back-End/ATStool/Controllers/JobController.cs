@@ -5,6 +5,7 @@ using ATStool.Data;
 using ATStool.DTOs;
 using ATStool.Models;
 using ATStool.Services;
+using ATStool.Constants;
 
 namespace ATStool.Controllers
 {
@@ -32,9 +33,9 @@ namespace ATStool.Controllers
             return Ok(ApiResponse<object>.Ok("Jobs fetched successfully.", jobs));
         }
 
-        // GET api/drafts/all - Admin/Recruiter/Interviewer can see all
+        // GET api/drafts/all - Admin/recruitment/interviewer can see all
         [HttpGet("all")]
-        [Authorize(Roles = "Admin,Recruiter,Interviewer")]
+        [Authorize(Roles = AppRoles.Admin + "," + AppRoles.Recruitment + "," + AppRoles.Interviewer)]
         public async Task<IActionResult> GetAllJobsAdmin()
         {
             var jobs = await _context.Jobs.ToListAsync();
@@ -65,9 +66,9 @@ namespace ATStool.Controllers
             return Ok(ApiResponse<object>.Ok("Job fetched successfully.", job));
         }
 
-        // POST api/drafts - Only Admin or Recruiter can post jobs
+        // POST api/drafts - Only Admin or recruitment can post jobs
         [HttpPost]
-        [Authorize(Roles = "Admin,Recruiter")]
+        [Authorize(Roles = AppRoles.Admin + "," + AppRoles.Recruitment)]
         public async Task<IActionResult> CreateJob(CreateJobDto dto)
         {
             if (!ModelState.IsValid)
@@ -124,9 +125,9 @@ namespace ATStool.Controllers
                 ApiResponse<object>.Ok("Job created successfully.", job));
         }
 
-        // PATCH api/drafts/{id} - Admin or Recruiter can update
+        // PATCH api/drafts/{id} - Admin or recruitment can update
         [HttpPatch("{id:guid}")]
-        [Authorize(Roles = "Admin,Recruiter")]
+        [Authorize(Roles = AppRoles.Admin + "," + AppRoles.Recruitment)]
         public async Task<IActionResult> UpdateJob(Guid id, PatchJobDto dto)
         {
             if (!ModelState.IsValid)
@@ -160,7 +161,7 @@ namespace ATStool.Controllers
 
         // PATCH api/drafts/{id}/toggle - Soft enable/disable a job
         [HttpPatch("{id:guid}/toggle")]
-        [Authorize(Roles = "Admin,Recruiter,Interviewer")]
+        [Authorize(Roles = AppRoles.Admin + "," + AppRoles.Recruitment + "," + AppRoles.Interviewer)]
         public async Task<IActionResult> ToggleJobStatus(Guid id)
         {
             var job = await _context.Jobs.FindAsync(id);
@@ -180,9 +181,9 @@ namespace ATStool.Controllers
             }));
         }
 
-        // DELETE api/drafts/{id} - Hard delete, Admin or Recruiter only
+        // DELETE api/drafts/{id} - Hard delete, Admin or recruitment only
         [HttpDelete("{id:guid}")]
-        [Authorize(Roles = "Admin,Recruiter")]
+        [Authorize(Roles = AppRoles.Admin + "," + AppRoles.Recruitment)]
         public async Task<IActionResult> DeleteJob(Guid id)
         {
             var job = await _context.Jobs.FindAsync(id);

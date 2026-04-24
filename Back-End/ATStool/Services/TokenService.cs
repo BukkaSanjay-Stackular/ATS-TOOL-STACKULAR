@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using ATStool.Models;
+using ATStool.Constants;
 
 namespace ATStool.Services
 {
@@ -20,7 +21,7 @@ namespace ATStool.Services
         // Generate JWT and set it as a cookie
         public void GenerateAndSetToken(User user, string userType)
         {
-            var token = GenerateToken(user, userType);
+            var token = GenerateToken(user, AppRoles.Normalize(userType));
             SetTokenCookie(token);
         }
 

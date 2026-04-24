@@ -6,6 +6,7 @@ using System.Text;
 using ATStool.Models;
 using ATStool.Data;
 using ATStool.Services;
+using ATStool.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -91,7 +92,7 @@ static async Task SeedData(WebApplication app)
 
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-    foreach (var role in new[] { "Admin", "Recruiter", "Interviewer" })
+    foreach (var role in new[] { AppRoles.Admin, AppRoles.Recruitment, AppRoles.Interviewer })
 
         if (!await roleManager.RoleExistsAsync(role))
 

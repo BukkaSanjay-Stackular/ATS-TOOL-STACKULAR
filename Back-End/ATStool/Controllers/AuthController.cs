@@ -5,6 +5,7 @@ using ATStool.Models;
 using ATStool.DTOs;
 using ATStool.Services;
 using Microsoft.AspNetCore.Authorization;
+using ATStool.Constants;
 
 namespace ATStool.Controllers
 {
@@ -24,23 +25,23 @@ namespace ATStool.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto dto)
         {
-            var validTypes = new[] { "Interviewer", "Recruiter", "Admin" };
-            if (!validTypes.Contains(dto.UserType))
-                return BadRequest("UserType must be Interviewer, Recruiter, or Admin.");
+            var userType = AppRoles.Normalize(dto.UserType);
+            if (!AppRoles.IsKnown(userType))
+                return BadRequest("UserType must be recruitment, interviewer, or Admin.");
 
             var user = new User
             {
                 FullName = dto.FullName,
                 Email = dto.Email,
                 UserName = dto.UserName,
-                UserType = dto.UserType
+                UserType = userType
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            await _userManager.AddToRoleAsync(user, dto.UserType);
+            await _userManager.AddToRoleAsync(user, userType);
 
             return Ok(ApiResponse<object>.Ok("User successfully Created", user));
         }
@@ -66,12 +67,15 @@ namespace ATStool.Controllers
             if (!isPasswordValid)
                 return Unauthorized(ApiResponse<string>.Fail("Invalid username or password."));
 
-            var roles = await _userManager.GetRolesAsync(user);
-            var userType = roles.FirstOrDefault() ?? "Interviewer";
+            var roles = (await _userManager.GetRolesAsync(user))
+                .Select(AppRoles.Normalize)
+                .ToList();
+            var userType = roles.FirstOrDefault() ?? AppRoles.Interviewer;
 
           
-            if (!string.IsNullOrEmpty(dto.Role) && !roles.Contains(dto.Role, StringComparer.OrdinalIgnoreCase))
-                return Unauthorized(ApiResponse<string>.Fail($"Access denied. You are not authorized as {dto.Role}."));
+            var requestedRole = AppRoles.Normalize(dto.Role);
+            if (!string.IsNullOrEmpty(dto.Role) && !roles.Contains(requestedRole))
+                return Unauthorized(ApiResponse<string>.Fail($"Access denied. You are not authorized as {requestedRole}."));
 
             
             _tokenService.GenerateAndSetToken(user, userType);
