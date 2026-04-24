@@ -1,17 +1,20 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace ATStool.DTOs
 {
     public class CreateJobDto
     {
+        [Required(ErrorMessage = "Job must have a title")]
         [JsonPropertyName("job_title")]
-        public string? JobTitle { get; set; }
+        public string JobTitle { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Job must have a location")]
         [JsonPropertyName("location")]
-        public string? Location { get; set; }
+        public string Location { get; set; } = string.Empty;
 
-        [JsonPropertyName("employment_type")]
-        public string? EmploymentType { get; set; }
+        [JsonPropertyName("experience_level")]
+        public string? ExperienceLevel { get; set; }
 
         [JsonPropertyName("work_mode")]
         public string? WorkMode { get; set; }
@@ -22,34 +25,16 @@ namespace ATStool.DTOs
         [JsonPropertyName("duration")]
         public string? Duration { get; set; }
 
-        [JsonPropertyName("role_description")]
-        public string? RoleDescription { get; set; }
-
-        [JsonPropertyName("assigned_to")]
-        public string? AssignedTo { get; set; }
-
-        [JsonPropertyName("stipend")]
-        public decimal Stipend { get; set; }
-
-        [JsonPropertyName("salary")]
-        public decimal Salary { get; set; }
+        [JsonPropertyName("stipend_salary")]
+        public string? StipendSalary { get; set; }
 
         [JsonPropertyName("fulltime_offer_salary")]
-        public decimal FullTimeOfferSalary { get; set; }
+        public string? FulltimeOfferSalary { get; set; }
 
-        [JsonPropertyName("experience_years")]
-        public double ExperienceYears { get; set; }
+        [JsonPropertyName("years_of_experience")]
+        public string? YearsOfExperience { get; set; }
 
-        [JsonPropertyName("posted_date")]
-        public DateTime PostedDate { get; set; }
-
-        [JsonPropertyName("deadline")]
-        public DateTime? DeadLine { get; set; }
-    }
-
-    public class UpdateJobDto : CreateJobDto
-    {
-        [JsonPropertyName("is_active")]
-        public bool IsActive { get; set; }
+        [JsonPropertyName("role_description")]
+        public string? RoleDescription { get; set; }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Microsoft.EntityFrameworkCore;
 
 namespace ATStool.Models
 {
@@ -17,11 +16,8 @@ namespace ATStool.Models
         [JsonPropertyName("location")]
         public string Location { get; set; } = string.Empty;
 
-        [JsonPropertyName("employment_type")]
-        public string? EmploymentType { get; set; }
-
         [JsonPropertyName("experience_level")]
-        public string? ExperienceLevel { get;set; }
+        public string? ExperienceLevel { get; set; } // "intern" | "fresher" | "experienced"
 
         [JsonPropertyName("work_mode")]
         public string? WorkMode { get; set; }
@@ -32,34 +28,32 @@ namespace ATStool.Models
         [JsonPropertyName("duration")]
         public string? Duration { get; set; }
 
+        [JsonPropertyName("stipend_salary")]
+        public string? StipendSalary { get; set; }
+
+        [JsonPropertyName("fulltime_offer_salary")]
+        public string? FulltimeOfferSalary { get; set; }
+
+        [JsonPropertyName("years_of_experience")]
+        public string? YearsOfExperience { get; set; }
+
         [JsonPropertyName("role_description")]
         public string? RoleDescription { get; set; }
 
+        // ── Backend sets these automatically ──────────────────────
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = "draft";
+
+        [JsonPropertyName("created_by")]
+        public string? CreatedBy { get; set; }
+
+        [JsonPropertyName("created_at")]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [JsonPropertyName("generated_id")]
+        public string GeneratedId { get; set; } = string.Empty;
+
         [JsonPropertyName("assigned_to")]
-        public string? AssignedTo { get; set; }
-
-        [JsonPropertyName("stipend")]
-        [Precision(18, 2)]
-        public decimal Stipend { get; set; }
-
-        [JsonPropertyName("salary")]
-        [Precision(18, 2)]
-        public decimal Salary { get; set; }
-
-        [JsonPropertyName("fulltime_offer_salary")]
-        [Precision(18, 2)]
-        public decimal FullTimeOfferSalary { get; set; }
-
-        [JsonPropertyName("experience_years")]
-        public double ExperienceYears { get; set; }
-
-        [JsonPropertyName("posted_date")]
-        public DateTime PostedDate { get; set; }
-
-        [JsonPropertyName("deadline")]
-        public DateTime? DeadLine { get; set; }
-
-        [JsonPropertyName("is_active")]
-        public bool IsActive { get; set; }
+        public List<string> AssignedTo { get; set; } = [];
     }
 }
