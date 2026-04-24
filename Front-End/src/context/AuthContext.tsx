@@ -18,16 +18,21 @@ interface StoredAuth {
   user: User
 }
 
+// We store the full user object alongside the token so the app can render the
+// correct role/name immediately on page refresh without a round-trip to /me
 function loadStoredAuth(): StoredAuth | null {
   try {
     const raw = localStorage.getItem('ats_user')
     return raw ? (JSON.parse(raw) as StoredAuth) : null
   } catch {
+    // Corrupt localStorage (e.g. another script wrote invalid JSON) — treat as logged out
     return null
   }
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  // Pass loadStoredAuth as a function (lazy init) so JSON.parse runs only once
+  // on mount, not on every re-render
   const [stored, setStored] = useState<StoredAuth | null>(loadStoredAuth)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -45,6 +50,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   function logout(): void {
     localStorage.removeItem('ats_user')
+    // Clear cached query data so the next user who logs in on the same browser
+    // doesn't briefly see the previous user's drafts
     queryClient.clear()
     setStored(null)
   }

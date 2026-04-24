@@ -1,7 +1,8 @@
-import { useState } from 'react'
 import { Download } from 'lucide-react'
+import { useState } from 'react'
 import { getPdf } from '../services/jdApi'
 import { useToast } from '../hooks/useToast'
+import { Spinner } from './ui/Spinner'
 import { ApiError } from '../types/api'
 
 interface Props {
@@ -22,6 +23,7 @@ export function DownloadButton({ draftId, jobTitle }: Props) {
       a.href = url
       a.download = `${jobTitle.replace(/\s+/g, '_')}_JD.pdf`
       a.click()
+      // Revoke immediately after click — the browser queues the download before the URL is gone
       URL.revokeObjectURL(url)
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : 'Download failed, try again'
@@ -53,11 +55,7 @@ export function DownloadButton({ draftId, jobTitle }: Props) {
       onMouseEnter={(e) => { if (!downloading) e.currentTarget.style.borderColor = '#6b7280' }}
       onMouseLeave={(e) => { if (!downloading) e.currentTarget.style.borderColor = '#37373f' }}
     >
-      {downloading ? (
-        <span style={{ width: '13px', height: '13px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} />
-      ) : (
-        <Download style={{ width: '13px', height: '13px' }} />
-      )}
+      {downloading ? <Spinner size="sm" /> : <Download style={{ width: '13px', height: '13px' }} />}
       {downloading ? 'Downloading...' : 'Download PDF'}
     </button>
   )

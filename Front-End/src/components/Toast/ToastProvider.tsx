@@ -1,7 +1,6 @@
 import { createContext, useCallback, useState, useEffect } from 'react'
 import { Toast } from './Toast'
 import type { ToastItem, ToastType } from './Toast'
-import { useNavigate } from 'react-router-dom'
 
 interface ToastContextValue {
   showToast: (message: string, type: ToastType) => void
@@ -14,7 +13,6 @@ export const ToastContext = createContext<ToastContextValue | null>(null)
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([])
-  const navigate = useNavigate()
 
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))
@@ -31,11 +29,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     function handleExpired() {
       showToast('Your session expired. Please sign in again.', 'error')
-      navigate('/login')
+      // Avoid router hooks here because ToastProvider sits above RouterProvider.
+      window.location.replace('/login')
     }
     window.addEventListener('ats:session-expired', handleExpired)
     return () => window.removeEventListener('ats:session-expired', handleExpired)
-  }, [showToast, navigate])
+  }, [showToast])
 
   return (
     <ToastContext.Provider value={{ showToast }}>
