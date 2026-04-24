@@ -4,49 +4,54 @@ description: All security findings with severity, status, and remediation
 type: project
 ---
 
-## Review Date: 2026-04-20 | Reviewed By: security-engineer agent
-## Last Updated: 2026-04-21
+## Review Date: 2026-04-20 | Last Updated: 2026-04-24
+
+---
+
+## Resolved Findings (since backend integration)
+
+### ~~CRITICAL — Plaintext passwords in JS bundle~~
+- **Was:** `src/constants/users.ts` — all passwords in the built `dist/` file
+- **Resolution:** File deleted. Auth is now `POST /api/auth/login` — passwords managed by backend.
+
+### ~~HIGH — localStorage session unsigned, no expiry~~
+- **Was:** `src/context/AuthContext.tsx` — manually constructed session, no TTL
+- **Resolution:** JWT issued by backend with server-side expiry. Frontend stores token only.
+
+### ~~HIGH — Role elevation via localStorage edit~~
+- **Was:** Open console → edit `localStorage.ats_user` → gain recruitment role
+- **Resolution:** Role is embedded in the JWT and verified by the backend on every request. Frontend role claim from localStorage is used only for UI routing — not for data access.
+
+### ~~HIGH — JD drafts unsigned in localStorage~~
+- **Was:** `src/context/JDContext.tsx` — `ats_jd_drafts` localStorage key editable by user
+- **Resolution:** `JDContext.tsx` deleted. All JD state lives on the server. `ats_jd_drafts` key no longer used.
+
+---
 
 ## Open Findings
 
-### CRITICAL — Plaintext passwords in JS bundle
-- **File:** `src/constants/users.ts` (previously `AuthContext.tsx`)
-- **Risk:** Anyone with the built `dist/` JS file sees all 7 passwords in plaintext
-- **Fix:** Compute bcrypt hashes offline → store in `.env.local` (gitignored) → compare with `bcryptjs` at login
-- **Status:** OPEN
+### MEDIUM — No brute-force protection on login
+- **File:** `Front-End/src/components/login/LoginForm.tsx` (form) — enforcement should be backend
+- **Risk:** Unlimited login attempts against `POST /api/auth/login`
+- **Fix:** Backend rate limiting on `/api/auth/login` (preferred). Client-side fallback: lock form after 5 failed attempts for 10 minutes.
+- **Status:** OPEN — backend team item
 
-### HIGH — localStorage session unsigned, no expiry
-- **File:** `src/context/AuthContext.tsx`
-- **Risk:** Session never expires; any JS on same origin can write a valid-looking session
-- **Fix:** HMAC-SHA256 sign session payload using SubtleCrypto; signing key in sessionStorage (tab-scoped); 8h TTL
-- **Status:** OPEN
+### LOW — autoComplete not set on password field
+- **File:** `Front-End/src/components/login/LoginForm.tsx`
+- **Risk:** Browser may autofill on shared machines
+- **Fix:** Add `autoComplete="current-password"` to the password `<input>`
+- **Status:** OPEN (5-minute fix, low priority)
 
-### HIGH — Role elevation via localStorage edit
-- **Files:** `AuthContext.tsx` + `ProtectedRoute.tsx`
-- **Risk:** Open browser console → set `localStorage.ats_user` with `role: "recruitment"` → instant access
-- **Fix:** Resolved automatically when HMAC signing above is implemented
-- **Status:** OPEN (blocked on HIGH above)
+---
 
-### HIGH — JD drafts unsigned in localStorage
-- **File:** `src/context/JDContext.tsx`
-- **Risk:** `ats_jd_drafts` in localStorage can be manually edited — attacker can change `createdBy`, `assignedTo`, `status`, or inject arbitrary JD content
-- **Fix:** Same HMAC signing approach as session; or move to sessionStorage for tab-scoped isolation
-- **Status:** OPEN (new finding — added 2026-04-21)
-
-### MEDIUM — No brute-force lockout
-- **File:** `src/pages/LoginPage.tsx`
-- **Fix:** Lock form after 5 failed attempts for 10 minutes (in-memory state + localStorage timestamp)
-- **Status:** OPEN
-
-### LOW — Missing autoComplete on password field
-- **File:** `src/pages/LoginPage.tsx`
-- **Fix:** Add `autoComplete="current-password"` or `"off"` for shared machines
-- **Status:** OPEN
-
-## Cleared Findings
-- XSS in error display — `{error}` is React text node, not raw HTML. Clean.
-- Route guard bypass — guard logic sound; only exploitable via role elevation finding above.
+## Cleared (always-clean) Findings
+- XSS in error display — `{error}` is a React text node, not raw HTML. Clean.
+- Route guard bypass — `ProtectedRoute` uses JWT-derived user role. Backend enforces data access.
 
 ## Accepted Until 2026-07-20
-All findings accepted for internal Phase 1 (no public exposure, no PII stored).
-Become hard blockers at: broader rollout, internet hosting, backend integration, or candidate data added.
+All remaining findings accepted for internal use (private network, named users, no PII stored).
+
+**Hard gates — become blockers at any of:**
+- Internet-accessible hosting
+- Sensitive candidate data (resumes, evaluations) introduced
+- Broader rollout beyond current 8 named users

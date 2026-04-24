@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Link, Outlet, useNavigate } from '@tanstack/react-router'
 import { LayoutDashboard, FilePlus, LogOut } from 'lucide-react'
 import { useAuth } from '../../context/useAuth'
 import GlowOrb from '../GlowOrb'
@@ -15,7 +15,7 @@ export default function InterviewerLayout() {
 
   function handleLogout() {
     logout()
-    navigate('/login')
+    navigate({ to: '/login' })
   }
 
   return (
@@ -46,19 +46,16 @@ export default function InterviewerLayout() {
 
         <nav className="flex-1 p-3 space-y-1">
           {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
-            <NavLink
+            <Link
               key={to}
               to={to}
               className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
-              style={({ isActive }) =>
-                isActive
-                  ? { background: '#1d2ba4', color: '#fff' }
-                  : { color: '#9ca3af' }
-              }
+              activeProps={{ style: { background: '#1d2ba4', color: '#fff' } }}
+              inactiveProps={{ style: { color: '#9ca3af' } }}
             >
               <Icon className="w-4 h-4" />
               {label}
-            </NavLink>
+            </Link>
           ))}
         </nav>
 
