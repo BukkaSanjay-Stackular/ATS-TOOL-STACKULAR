@@ -53,6 +53,18 @@ namespace ATStool.Controllers
             return Ok(ApiResponse<object>.Ok("Job fetched successfully.", job));
         }
 
+        //GET api/drafts/{id}/generate
+        [HttpGet("{id:Guid}/generate")]
+        public async Task<IActionResult> GetJobDraft(Guid id)
+        {
+            var job = await _context.Jobs.FindAsync(id);
+
+            if (job == null)
+                return NotFound(ApiResponse<string>.Fail("Job not Found."));
+
+            return Ok(ApiResponse<object>.Ok("Job fetched successfully.", job));
+        }
+
         // POST api/drafts - Only Admin or Recruiter can post jobs
         [HttpPost]
         [Authorize(Roles = "Admin,Recruiter")]

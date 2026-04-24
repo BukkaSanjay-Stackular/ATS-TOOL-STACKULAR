@@ -69,11 +69,15 @@ namespace ATStool.Controllers
             var roles = await _userManager.GetRolesAsync(user);
             var userType = roles.FirstOrDefault() ?? "Interviewer";
 
-            // ← Generate JWT and set it as cookie in one line
+          
+            if (!string.IsNullOrEmpty(dto.Role) && !roles.Contains(dto.Role, StringComparer.OrdinalIgnoreCase))
+                return Unauthorized(ApiResponse<string>.Fail($"Access denied. You are not authorized as {dto.Role}."));
+
+            
             _tokenService.GenerateAndSetToken(user, userType);
 
             var data = new { userType, name = user.FullName, email = user.Email };
-            // ← Removed token from response, it's now in the cookie
+           
 
             return Ok(ApiResponse<object>.Ok("Login successful.", data));
         }
