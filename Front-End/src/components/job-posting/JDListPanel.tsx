@@ -129,10 +129,10 @@ export function JDListPanel({ drafts, isLoading, copiedIds, onCopy, onEditFinali
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
                   <StatusBadge status={draft.status} />
 
-                  {draft.status === 'finalized' && draft.generatedJD && (
+                  {draft.status === 'finalized' && draft.roleDescription && (
                     <>
                       <button
-                        onClick={() => onCopy(draft.id, draft.generatedJD)}
+                        onClick={() => onCopy(draft.id, draft.roleDescription)}
                         title="Copy JD"
                         style={{
                           display: 'flex',

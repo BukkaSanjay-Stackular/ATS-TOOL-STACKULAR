@@ -30,5 +30,4 @@ export interface JDDraft {
   status: JDStatus
   createdBy: string
   createdAt: string
-  generatedJD: string
 }

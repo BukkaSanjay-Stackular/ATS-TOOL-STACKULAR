@@ -296,7 +296,7 @@ export default function JobPostingPage() {
         isLoading={isLoading}
         copiedIds={copiedIds}
         onCopy={handleCopyJD}
-        onEditFinalized={(draft) => { setPreviewDraftId(draft.id); setPreviewJD(draft.generatedJD); setPreviewDraft(draft) }}
+        onEditFinalized={(draft) => { setPreviewDraftId(draft.id); setPreviewJD(draft.roleDescription); setPreviewDraft(draft) }}
         onDelete={(id) => deleteDraftMutation.mutate(id)}
         isDeleting={deleteDraftMutation.isPending}
       />

@@ -50,10 +50,9 @@ export interface ApiDraft {
   stipend_salary: string
   fulltime_offer_salary: string
   years_of_experience: string
-  role_description: string | null   // null until interviewer submits
+  role_description: string | null   // null until AI generates (overwritten by AI on create, then by interviewer on submit)
   assigned_to: string[] | null      // null until recruitment assigns
   status: JDStatus
   created_by: string
   created_at: string
-  generated_jd: string | null       // null until AI generates
 }

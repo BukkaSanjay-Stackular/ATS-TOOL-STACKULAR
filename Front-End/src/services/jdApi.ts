@@ -18,12 +18,11 @@ function mapDraft(d: ApiDraft): JDDraft {
     stipendSalary: d.stipend_salary,
     fulltimeOfferSalary: d.fulltime_offer_salary,
     yearsOfExperience: d.years_of_experience,
-    roleDescription: d.role_description ?? '',   // null until interviewer fills it in
+    roleDescription: d.role_description ?? '',   // holds AI-generated JD after create; overwritten by interviewer on submit
     assignedTo: d.assigned_to ?? [],             // null until recruitment assigns someone
     status: d.status,
     createdBy: d.created_by,
     createdAt: d.created_at,
-    generatedJD: d.generated_jd ?? '',           // null until AI generation runs
   }
 }
 
@@ -110,6 +109,8 @@ export async function submitDraft(id: string): Promise<JDDraft> {
   return mapDraft(raw.data)
 }
 
+// Calls the dedicated AI-generation endpoint once the backend implements it.
+// Until then, role_description is populated inline by POST /drafts.
 export async function generatePreview(id: string): Promise<JDPreviewResponse> {
   const raw = await apiFetch<ApiEnvelope<JDPreviewResponse>>(`/drafts/${id}/generate`, { method: 'POST', body: '{}' })
   return raw.data

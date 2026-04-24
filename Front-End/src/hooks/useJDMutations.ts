@@ -4,7 +4,6 @@ import {
   createDraft,
   updateDraft,
   assignDraft,
-  generatePreview,
   deleteDraft,
 } from '../services/jdApi'
 import { ApiError } from '../types/api'
@@ -65,12 +64,12 @@ export function useJDMutations({
     onError: (err) => handleApiError(err, 'Failed to assign, please try again.'),
   })
 
-  // Generate JD from the current form — creates a new draft, then triggers AI
+  // Generate JD from the current form — backend generates inline during POST /drafts
+  // and stores the result in role_description. No separate generate step needed.
   const generateFromFormMutation = useMutation({
     mutationFn: async (payload: CreateDraftPayload) => {
       const draft = await createDraft(payload)
-      const result = await generatePreview(draft.id)
-      return { draft, previewJD: result.previewJD }
+      return { draft, previewJD: draft.roleDescription }
     },
     onSuccess: ({ draft, previewJD }) => {
       queryClient.invalidateQueries({ queryKey })
@@ -79,12 +78,12 @@ export function useJDMutations({
     onError: (err) => handleApiError(err, 'Failed to generate JD, please try again.'),
   })
 
-  // Generate JD while editing a returned draft — saves edits first, then generates
+  // Generate JD while editing a returned draft — saves edits, then uses the updated
+  // role_description as the preview (backend does not have a separate generate endpoint)
   const updateAndGenerateMutation = useMutation({
     mutationFn: async ({ id, payload }: { id: string; payload: CreateDraftPayload }) => {
       const draft = await updateDraft(id, payload)
-      const result = await generatePreview(id)
-      return { draft, previewJD: result.previewJD }
+      return { draft, previewJD: draft.roleDescription }
     },
     onSuccess: ({ draft, previewJD }) => {
       queryClient.invalidateQueries({ queryKey })
@@ -97,21 +96,25 @@ export function useJDMutations({
     },
   })
 
-  // Re-generate JD from an existing draft row (no form update)
+  // Re-open JD preview for an existing draft row — reads role_description directly
   const generateFromDraftMutation = useMutation({
-    mutationFn: (draftId: string) => generatePreview(draftId),
-    onSuccess: (result, draftId) => {
+    mutationFn: async (draftId: string) => {
+      const draft = getDraftById(draftId)
+      if (!draft) throw new Error('Draft not found')
+      return draft.roleDescription
+    },
+    onSuccess: (previewJD, draftId) => {
       const draft = getDraftById(draftId)
       if (!draft) {
         showToast('Failed to load draft data, please try again.', 'error')
         setGeneratingDraftId(null)
         return
       }
-      onGenerateSuccess(draft, result.previewJD)
+      onGenerateSuccess(draft, previewJD)
       setGeneratingDraftId(null)
     },
     onError: () => {
-      showToast('Failed to generate JD, please try again.', 'error')
+      showToast('Failed to load JD, please try again.', 'error')
       setGeneratingDraftId(null)
     },
   })
