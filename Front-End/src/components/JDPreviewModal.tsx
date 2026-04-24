@@ -168,20 +168,18 @@ export function JDPreviewModal({ draftId, previewJD, draft, queryKey, onClose }:
               style={{
                 width: '100%',
                 minHeight: '400px',
-                background: '#1a1d20',
-                border: '1px solid #37373f',
-                borderRadius: '8px',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: '1px solid #37373f',
                 color: '#e5e7eb',
-                padding: '14px',
+                padding: '0 0 16px 0',
                 fontSize: '13px',
-                fontFamily: 'monospace',
-                lineHeight: 1.7,
-                resize: 'vertical',
+                fontFamily: 'Sora, sans-serif',
+                lineHeight: 1.8,
+                resize: 'none',
                 outline: 'none',
                 boxSizing: 'border-box',
               }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = '#1d2ba4')}
-              onBlur={(e) => (e.currentTarget.style.borderColor = '#37373f')}
             />
           ) : (
             <pre style={{ color: '#e5e7eb', fontSize: '13px', fontFamily: 'Sora, sans-serif', lineHeight: 1.8, whiteSpace: 'pre-wrap', margin: 0 }}>
