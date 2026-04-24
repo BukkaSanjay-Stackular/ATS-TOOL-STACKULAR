@@ -33,7 +33,7 @@ namespace ATStool.Controllers
             return Ok(ApiResponse<object>.Ok("Jobs fetched successfully.", jobs));
         }
 
-        //GET api/jobs/all -Admin/Recruiter can see all including inactive
+        //GET api/drafts/all -Admin/Recruiter can see all including inactive
         [HttpGet("all")]
         [Authorize(Roles = "Admin,Recruiter,Interviewer")]
         public async Task<IActionResult> GetAllJobsAdmin()
@@ -88,21 +88,21 @@ namespace ATStool.Controllers
                 IsActive = true
             };
 
-            //object jobFormat = new
-            //{
-            //    jobTitle = job.JobTitle,
-            //    experienceLevel = job.ExperienceLevel,
-            //    location = job.Location,
-            //    workMode = job.WorkMode,
-            //    workHours = job.WorkHours,
-            //    duration = job.Duration,
-            //    stipend = job.Stipend.ToString(),                     // ← convert to string
-            //    salary = job.Salary.ToString(),                       // ← convert to string
-            //    fullTimeOfferSalary = job.FullTimeOfferSalary.ToString(), // ← convert to string
-            //    experienceYears = job.ExperienceYears.ToString(),     // ← convert to string
-            //    roleDescription = job.RoleDescription,
-            //    companyName = "Stackular"
-            //};
+            object jobFormat = new
+            {
+                jobTitle = job.JobTitle,
+                experienceLevel = job.ExperienceLevel,
+                location = job.Location,
+                workMode = job.WorkMode,
+                workHours = job.WorkHours,
+                duration = job.Duration,
+                stipend = job.Stipend.ToString(),                     // ← convert to string
+                salary = job.Salary.ToString(),                       // ← convert to string
+                fullTimeOfferSalary = job.FullTimeOfferSalary.ToString(), // ← convert to string
+                experienceYears = job.ExperienceYears.ToString(),     // ← convert to string
+                roleDescription = job.RoleDescription,
+                companyName = "Stackular"
+            };
 
 
             _context.Jobs.Add(job);
@@ -110,7 +110,7 @@ namespace ATStool.Controllers
 
 
             //Send job to external API and get RoleDescription back
-            //var externalUrl = _config["ExternalApi:BaseUrl"];
+            var externalUrl = _config["ExternalApi:BaseUrl"];
 
             //var testPayload = new
             //{
@@ -120,9 +120,9 @@ namespace ATStool.Controllers
             //    body = "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
             //};
 
-            //var externalResponse = await _apiService.PostAsync<ExternalApiResponse>(externalUrl, jobFormat); // ✅ returns object - main
+            var externalResponse = await _apiService.PostAsync<ExternalApiResponse>(externalUrl, jobFormat); // ✅ returns object - main
 
-            //job.RoleDescription = externalResponse.Jd; - main
+            job.RoleDescription = externalResponse.Jd; 
 
             //Update RoleDescription with the response from external API
             //job.RoleDescription = externalResponse.jd;
