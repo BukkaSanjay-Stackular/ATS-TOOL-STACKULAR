@@ -1,5 +1,13 @@
 import type { ExperienceLevel, JDStatus, UserRole } from './index'
 
+// Backend wraps every response in this envelope. Always unwrap with `.data`.
+export interface ApiEnvelope<T> {
+  success: boolean
+  message: string
+  data: T
+  errors: unknown | null
+}
+
 // Extends Error so callers can use `instanceof ApiError` to distinguish our
 // typed API errors from unexpected runtime errors (e.g. TypeError, RangeError)
 export class ApiError extends Error {

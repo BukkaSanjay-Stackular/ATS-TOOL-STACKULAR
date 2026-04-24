@@ -1,5 +1,5 @@
 import { apiFetch, apiFetchBlob } from './apiClient'
-import type { ApiDraft, JDPreviewResponse } from '../types/api'
+import type { ApiDraft, ApiEnvelope, JDPreviewResponse } from '../types/api'
 import type { ExperienceLevel, JDDraft } from '../types'
 
 // Single conversion point between the server's snake_case shape (ApiDraft) and
@@ -45,12 +45,12 @@ export async function getDrafts(query: { createdBy?: string; assignedTo?: string
   const params = new URLSearchParams()
   if (query.createdBy) params.set('createdBy', query.createdBy)
   if (query.assignedTo) params.set('assignedTo', query.assignedTo)
-  const raw = await apiFetch<ApiDraft[]>(`/drafts?${params.toString()}`)
-  return raw.map(mapDraft)
+  const raw = await apiFetch<ApiEnvelope<ApiDraft[]>>(`/drafts?${params.toString()}`)
+  return raw.data.map(mapDraft)
 }
 
 export async function createDraft(payload: CreateDraftPayload): Promise<JDDraft> {
-  const raw = await apiFetch<ApiDraft>('/drafts', {
+  const raw = await apiFetch<ApiEnvelope<ApiDraft>>('/drafts', {
     method: 'POST',
     body: JSON.stringify({
       experience_level: payload.experience_level,
@@ -65,11 +65,11 @@ export async function createDraft(payload: CreateDraftPayload): Promise<JDDraft>
       role_description: payload.roleDescription,
     }),
   })
-  return mapDraft(raw)
+  return mapDraft(raw.data)
 }
 
 export async function updateDraft(id: string, payload: CreateDraftPayload): Promise<JDDraft> {
-  const raw = await apiFetch<ApiDraft>(`/drafts/${id}`, {
+  const raw = await apiFetch<ApiEnvelope<ApiDraft>>(`/drafts/${id}`, {
     method: 'PATCH',
     body: JSON.stringify({
       experience_level: payload.experience_level,
@@ -84,34 +84,35 @@ export async function updateDraft(id: string, payload: CreateDraftPayload): Prom
       role_description: payload.roleDescription,
     }),
   })
-  return mapDraft(raw)
+  return mapDraft(raw.data)
 }
 
 export async function assignDraft(id: string, assignedTo: string[]): Promise<JDDraft> {
-  const raw = await apiFetch<ApiDraft>(`/drafts/${id}/assign`, {
+  const raw = await apiFetch<ApiEnvelope<ApiDraft>>(`/drafts/${id}/assign`, {
     method: 'PATCH',
     body: JSON.stringify({ assigned_to: assignedTo }),
   })
-  return mapDraft(raw)
+  return mapDraft(raw.data)
 }
 
 export async function submitRoleDescription(id: string, roleDescription: string): Promise<JDDraft> {
-  const raw = await apiFetch<ApiDraft>(`/drafts/${id}/role-description`, {
+  const raw = await apiFetch<ApiEnvelope<ApiDraft>>(`/drafts/${id}/role-description`, {
     method: 'PATCH',
     body: JSON.stringify({ role_description: roleDescription }),
   })
-  return mapDraft(raw)
+  return mapDraft(raw.data)
 }
 
 export async function submitDraft(id: string): Promise<JDDraft> {
   // body: '{}' — the backend expects a JSON body even though there's no payload;
   // sending no body causes a 400 from the .NET middleware
-  const raw = await apiFetch<ApiDraft>(`/drafts/${id}/submit`, { method: 'PATCH', body: '{}' })
-  return mapDraft(raw)
+  const raw = await apiFetch<ApiEnvelope<ApiDraft>>(`/drafts/${id}/submit`, { method: 'PATCH', body: '{}' })
+  return mapDraft(raw.data)
 }
 
 export async function generatePreview(id: string): Promise<JDPreviewResponse> {
-  return apiFetch<JDPreviewResponse>(`/drafts/${id}/generate`, { method: 'POST', body: '{}' })
+  const raw = await apiFetch<ApiEnvelope<JDPreviewResponse>>(`/drafts/${id}/generate`, { method: 'POST', body: '{}' })
+  return raw.data
 }
 
 export interface FinalizeDraftPayload {
@@ -130,19 +131,19 @@ export interface FinalizeDraftPayload {
 }
 
 export async function finalizeDraft(id: string, payload: FinalizeDraftPayload): Promise<JDDraft> {
-  const raw = await apiFetch<ApiDraft>(`/drafts/${id}/finalize`, {
+  const raw = await apiFetch<ApiEnvelope<ApiDraft>>(`/drafts/${id}/finalize`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
-  return mapDraft(raw)
+  return mapDraft(raw.data)
 }
 
 export async function dismissDraft(id: string, username: string): Promise<JDDraft> {
-  const raw = await apiFetch<ApiDraft>(`/drafts/${id}/dismiss`, {
+  const raw = await apiFetch<ApiEnvelope<ApiDraft>>(`/drafts/${id}/dismiss`, {
     method: 'PATCH',
     body: JSON.stringify({ username }),
   })
-  return mapDraft(raw)
+  return mapDraft(raw.data)
 }
 
 export async function deleteDraft(id: string): Promise<void> {
